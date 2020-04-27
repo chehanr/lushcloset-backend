@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  django:
+    build: 
+      context: .
+      dockerfile: dockerfiles/Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: django_container
+    depends_on:
+      - postgres
+    env_file:
+      - ./envs/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/src/app/
+  postgres:
+    container_name: postgres_container
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lushcloset_dev_db
+    image: postgres:12.2-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

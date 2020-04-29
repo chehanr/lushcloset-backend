@@ -1,13 +1,17 @@
+from django.db import transaction
 from django.db.models.expressions import RawSQL
 from django_filters import rest_framework as filters
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, response, status, viewsets
 
+from lushcloset.api.v1_0.permissions.listing import ListingPermission
 from lushcloset.api.v1_0.serializers.listing import (
+    ListingCreateSerializer,
     ListingListSerializer,
     ListingRetrieveSerializer,
 )
 from lushcloset.core.models.listing import Listing
 from lushcloset.core.models.location import Location
+from lushcloset.core.models.price import Price
 
 
 def get_locations_nearby_coords(latitude, longitude, max_distance=None):
@@ -69,17 +73,20 @@ class ListingFilter(filters.FilterSet):
 
 
 class ListingViewSet(
-    mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
 ):
-    """`Listing view set."""
+    """`Listing` view set."""
 
     """
-    
-    Notes:
-    - Only makes use of active user accounts.
+    TODO:
+    - Add `PUT` methods. 
     """
 
     queryset = Listing.objects.all()
+    permission_classes = (ListingPermission,)
 
     # Change lookup field from `pk` to `uuid`.
     lookup_field = "uuid"
@@ -89,5 +96,62 @@ class ListingViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return ListingListSerializer
+        if self.action == "create":
+            return ListingCreateSerializer
 
         return ListingRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        """ Override create method. """
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+
+        try:
+            price_obj = Price.objects.create(
+                value=validated_data["price"]["value"],
+                currency_type=validated_data["price"]["currency_type"],
+            )
+        except Exception as e:
+            # TODO: Log errors properly.
+            print(e)
+
+            return response.Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # validation for the location returns the geocoding result.
+        geocoding_result = validated_data["location"]["address"]
+
+        try:
+            location_obj = Location.objects.create(
+                google_place_id=geocoding_result["place_id"],
+                latitude=geocoding_result["geometry"]["location"]["lat"],
+                longitude=geocoding_result["geometry"]["location"]["lng"],
+                note=validated_data["location"]["note"],
+            )
+        except Exception as e:
+            # TODO: Log errors properly.
+            print(e)
+
+            return response.Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            listing_obj = Listing.objects.create(
+                title=validated_data["title"],
+                description=validated_data["description"],
+                creator=request.user,
+                price=price_obj,
+                location=location_obj,
+            )
+        except Exception as e:
+            # TODO: Log errors properly.
+            print(e)
+
+            return response.Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        serializer = self.get_serializer(listing_obj, context={"request": request})
+        headers = self.get_success_headers(serializer.data)
+
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED)

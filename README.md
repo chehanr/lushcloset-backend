@@ -1,17 +1,5 @@
-# LushCloset backend
+# LushCloset-backend: API for a P2P clothes rental platform
 
-## Running locally
+Swinburne CS final year group project (Software Engineering Project A - B)
 
-1. Duplicate *envs/.env.example* as *envs/.env*
-1. Update the environment variables in the *docker-compose.yml* and *.env* files
-1. Build the images and run the containers:
-
-    ```sh
-    docker-compose up --build
-    ```
-
-    The server should be available at [http://localhost:8000](http://localhost:8000)
-
-## Deployment
-
-TBA
+Refer the [Wiki](https://github.com/chehanr/lushcloset-backend/wiki/Getting-started) to set it up.

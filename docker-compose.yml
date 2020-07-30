@@ -1,29 +1,48 @@
-version: '3'
+version: '3.8'
 
 services:
-  django:
-    build: 
-      context: .
-      dockerfile: dockerfiles/Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
-    container_name: django_container
+  server:
+    build: .
+    command: 'npm run dev'
     depends_on:
       - postgres
     env_file:
-      - ./envs/.env
+      - .env
     ports:
-      - "8000:8000"
+      - ${PORT}:${PORT}
+    restart: unless-stopped
     volumes:
       - ./:/usr/src/app/
+
   postgres:
-    container_name: postgres_container
     environment:
+      - POSTGRES_MULTIPLE_DATABASES=dev_db,test_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=lushcloset_dev_db
-    image: postgres:12.2-alpine
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: postgres:13-alpine
+    ports:
+      - 5432:5432
+    restart: unless-stopped
     volumes:
+      - ./scripts/multiple-postgresql-databases:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    image: dpage/pgadmin4
+    ports:
+      - '8000:80'
+    restart: unless-stopped
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   postgres_data:
+  pgadmin_data:

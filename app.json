@@ -1,0 +1,50 @@
+{
+  "name": "jant-backend",
+  "description": "Backend server for JANT",
+  "keywords": ["node", "expressjs"],
+  "website": "",
+  "repository": "https://github.com/chehanr/jant-backend",
+  "logo": "",
+  "success_url": "",
+  "scripts": {
+    "start": "npm start",
+    "build": "",
+    "release": "./scripts/heroku-release.sh",
+    "postdeploy": "",
+    "heroku-prebuild": "",
+    "heroku-postbuild": "",
+    "heroku-cleanup": ""
+  },
+  "env": {
+    "JWT_SECRET": {
+      "generator": "secret"
+    },
+    "JWT_EXPIRATION_TIME": "7d",
+    "GOOGLE_CLIENT_ID": "",
+    "GOOGLE_CLIENT_SECRET": ""
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "image": "heroku/nodejs",
+  "addons": [
+    {
+      "plan": "heroku-postgresql",
+      "options": {
+        "version": "12"
+      }
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "environments": {
+    "test": "",
+    "review": ""
+  }
+}

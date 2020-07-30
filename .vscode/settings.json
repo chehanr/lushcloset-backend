@@ -1,19 +1,16 @@
 {
-    "python.formatting.provider": "black",
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Args": [
-        "--settings-path=${workspaceFolder}/setup.cfg",
-    ],
-    "python.sortImports.args": [
-        "--settings-path=${workspaceFolder}/setup.cfg",
-    ],
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": true,
-        },
-    },
-    "python.pythonPath": ".venv\\Scripts\\python.exe",
+  "editor.formatOnSave": false,
+  "[json]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "[yaml]": {
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2
+  },
+  "files.eol": "\n",
 }

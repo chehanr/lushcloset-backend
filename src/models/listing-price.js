@@ -21,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       value: {
         allowNull: false,
-        type: DataTypes.INTEGER.UNSIGNED,
+        // TODO: Add not null check.
+        type: DataTypes.INTEGER,
       },
       currencyTypeIso: {
         allowNull: false,

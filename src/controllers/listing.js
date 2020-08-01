@@ -2,6 +2,7 @@ const BaseController = require('./base');
 const models = require('../models');
 const googleMapsHelper = require('../helpers/google-maps');
 const googleMapsUtils = require('../utils/google-maps');
+const apiUtils = require('../utils/api');
 
 class ListingController extends BaseController {
   /**
@@ -91,10 +92,15 @@ class ListingController extends BaseController {
         true
       );
 
+      const shortDescription = apiUtils.truncateString(
+        apiUtils.cleanString(result.listing.description),
+        256
+      );
+
       const responsObj = {
         id: result.listing.id,
         title: result.listing.title,
-        shortDescription: null,
+        shortDescription: shortDescription,
         description: result.listing.description,
         listingType: result.listing.listingType,
         price: {
@@ -189,10 +195,15 @@ class ListingController extends BaseController {
           true
         );
 
+        const shortDescription = apiUtils.truncateString(
+          apiUtils.cleanString(listingObj.description),
+          256
+        );
+
         const responseObj = {
           id: listingObj.id,
           title: listingObj.title,
-          shortDescription: null,
+          shortDescription: shortDescription,
           description: listingObj.description,
           listingType: listingObj.listingType,
           price: {

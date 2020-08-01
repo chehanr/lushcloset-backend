@@ -256,6 +256,153 @@ class ListingController extends BaseController {
       return this.fail(res, error);
     }
   }
+
+  /**
+   * Update a listing \
+   * with params `listingId`.
+   */
+  async updateListingItem(req, res) {
+    const errorResponseObj = { validation: {} };
+
+    if (req.validated.params?.error) {
+      errorResponseObj.validation.params = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.body?.error) {
+      errorResponseObj.validation.body = req.validated.body.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingAddress,
+              as: 'listingAddress',
+            },
+            {
+              model: models.ListingPrice,
+              as: 'listingPrice',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj) {
+        if (listingObj.userId !== req.user?.id) {
+          return this.unauthorized(res, null);
+        }
+
+        if (listingObj.listingStatus.statusType !== 'available') {
+          return this.forbidden(
+            res,
+            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
+          );
+        }
+
+        if (
+          typeof req.validated.body.value.description !== 'undefined' &&
+          req.validated.body.value.description !== listingObj.description
+        ) {
+          listingObj.description = req.validated.body.value.description;
+        }
+
+        if (
+          typeof req.validated.body.value.addressNote !== 'undefined' &&
+          req.validated.body.value.addressNote !==
+            listingObj.listingAddress.addressNote
+        ) {
+          listingObj.listingAddress.note = req.validated.body.value.addressNote;
+        }
+
+        if (
+          typeof req.validated.body.value.priceValue !== 'undefined' &&
+          req.validated.body.value.priceValue !== listingObj.listingPrice.value
+        ) {
+          listingObj.listingPrice.value = req.validated.body.value.priceValue;
+        }
+
+        listingObj.save();
+
+        const geocodingData = listingObj.listingAddress.googleGeocodingData;
+
+        const addressComponentsObj = googleMapsUtils.getAddressComponents(
+          geocodingData
+        );
+
+        const approxAddressComponentsObj = googleMapsUtils.getAddressComponents(
+          geocodingData,
+          true
+        );
+
+        const shortDescription = apiUtils.truncateString(
+          apiUtils.cleanString(listingObj.description),
+          256
+        );
+
+        const responseObj = {
+          id: listingObj.id,
+          title: listingObj.title,
+          shortDescription: shortDescription,
+          description: listingObj.description,
+          listingType: listingObj.listingType,
+          price: {
+            value: listingObj.listingPrice.value,
+            currencyTypeIso: listingObj.listingPrice.currencyTypeIso,
+          },
+          user: {
+            id: listingObj.user.id,
+            name: listingObj.user.name,
+          },
+          approximateLocation: {
+            formattedAddress: googleMapsUtils.getFormattedAddress(
+              approxAddressComponentsObj
+            ),
+            addressComponents: approxAddressComponentsObj,
+          },
+          preciseLocation: {
+            submittedAddress: listingObj.listingAddress.submittedAddress,
+            formattedAddress: listingObj.listingAddress.formattedAddress,
+            addressComponents: addressComponentsObj,
+            geographic: {
+              lat:
+                listingObj.listingAddress.googleGeocodingData?.geometry
+                  ?.location.lat || null,
+              lng:
+                listingObj.listingAddress.googleGeocodingData?.geometry
+                  ?.location.lng || null,
+            },
+            googlePlaceId:
+              // eslint-disable-next-line camelcase
+              listingObj.listingAddress.googleGeocodingData?.place_id || null,
+            note: listingObj.listingAddress.note || null,
+          },
+          status: listingObj.listingStatus.statusType,
+          createdAt: listingObj.createdAt,
+          updatedAt: listingObj.updatedAt,
+        };
+
+        return this.ok(res, responseObj);
+      }
+
+      return this.notFound(res, null);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
 }
 
 module.exports = new ListingController();

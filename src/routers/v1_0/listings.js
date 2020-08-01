@@ -28,4 +28,13 @@ router.get(
   }
 );
 
+router.put(
+  '/:listingId',
+  authMiddleware.authRequired,
+  validationMiddleware(listingValidator.updateListingItemSchema),
+  (req, res) => {
+    listingController.updateListingItem(req, res);
+  }
+);
+
 module.exports = router;

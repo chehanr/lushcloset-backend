@@ -39,4 +39,10 @@ module.exports = {
       // currencyTypeIso: Joi.string().length(3).uppercase().required(), // Limit to AUD?
     }),
   },
+
+  deleteListingItemSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+  },
 };

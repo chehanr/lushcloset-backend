@@ -37,4 +37,13 @@ router.put(
   }
 );
 
+router.delete(
+  '/:listingId',
+  authMiddleware.authRequired,
+  validationMiddleware(listingValidator.deleteListingItemSchema),
+  (req, res) => {
+    listingController.deleteListingItem(req, res);
+  }
+);
+
 module.exports = router;

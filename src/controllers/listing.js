@@ -403,6 +403,59 @@ class ListingController extends BaseController {
       return this.fail(res, error);
     }
   }
+
+  /**
+   * Delete a listing \
+   * with params `listingId`.
+   */
+  async deleteListingItem(req, res) {
+    const errorResponseObj = { validation: {} };
+
+    if (req.validated.params?.error) {
+      errorResponseObj.validation.params = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj) {
+        if (listingObj.userId !== req.user?.id) {
+          return this.unauthorized(res, null);
+        }
+
+        if (listingObj.listingStatus.statusType !== 'available') {
+          return this.forbidden(
+            res,
+            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
+          );
+        }
+
+        await listingObj.destroy();
+
+        return this.noContent(res, null);
+      }
+
+      return this.notFound(res, null);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
 }
 
 module.exports = new ListingController();

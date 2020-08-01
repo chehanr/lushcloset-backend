@@ -22,6 +22,48 @@ module.exports = {
     }),
   },
 
+  retrieveListingListSchema: {
+    QUERY: Joi.object({
+      orderBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid(
+            'priceValue',
+            '-priceValue',
+            'createdAt',
+            '-createdAt',
+            'updatedAt',
+            '-updatedAt'
+          )
+        ),
+        Joi.valid(
+          'priceValue',
+          '-priceValue',
+          'createdAt',
+          '-createdAt',
+          'updatedAt',
+          '-updatedAt'
+        )
+      ),
+      filterBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid(
+            'isRentable',
+            'isPurchasable',
+            'isAvailable',
+            '-isAvailable'
+          )
+        ),
+        Joi.valid('isRentable', 'isPurchasable', 'isAvailable', '-isAvailable')
+      ),
+      titleiLike: Joi.string(),
+      priceGte: Joi.number(),
+      priceLte: Joi.number(),
+      currencyTypeIso: Joi.string().length(3).uppercase(), // Limit to AUD?
+      limit: Joi.number().positive().allow(0),
+      offset: Joi.number().positive().allow(0),
+    }),
+  },
+
   updateListingItemSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),

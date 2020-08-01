@@ -10,6 +10,15 @@ const router = express.Router();
 // /                          get, post
 // /:listingId                get, put, delete
 
+router.get(
+  '/',
+  authMiddleware.authRequired,
+  validationMiddleware(listingValidator.retrieveListingListSchema),
+  (req, res) => {
+    listingController.retrieveListingList(req, res);
+  }
+);
+
 router.post(
   '/',
   authMiddleware.authRequired,

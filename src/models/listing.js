@@ -23,6 +23,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasOne(models.ListingStatus, {
+        as: 'listingStatus',
+        foreignKey: 'listingId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
     }
   }
 
@@ -66,6 +73,12 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.ListingStatus.destroy({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
@@ -77,6 +90,12 @@ module.exports = (sequelize, DataTypes) => {
           });
 
           await sequelize.models.ListingPrice.restore({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.ListingStatus.restore({
             where: { userId: instance.where?.id },
           }).catch((error) => {
             logger.error(error);

@@ -89,6 +89,8 @@ class ListingController extends BaseController {
         formattedAddress: result.listingAddress.formattedAddress,
         addressNote: result.listingAddress.note,
         status: result.listingStatus.statusType,
+        createdAt: result.listing.createdAt,
+        updatedAt: result.listing.updatedAt,
       };
 
       return this.created(res, responsObj);

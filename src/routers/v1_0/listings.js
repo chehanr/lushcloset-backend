@@ -19,4 +19,13 @@ router.post(
   }
 );
 
+router.get(
+  '/:listingId',
+  authMiddleware.authOptional,
+  validationMiddleware(listingValidator.retrieveListingItemSchema),
+  (req, res) => {
+    listingController.retrieveListingItem(req, res);
+  }
+);
+
 module.exports = router;

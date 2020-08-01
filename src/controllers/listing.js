@@ -335,7 +335,7 @@ class ListingController extends BaseController {
           listingObj.listingPrice.value = req.validated.body.value.priceValue;
         }
 
-        listingObj.save();
+        await listingObj.save();
 
         const geocodingData = listingObj.listingAddress.googleGeocodingData;
 

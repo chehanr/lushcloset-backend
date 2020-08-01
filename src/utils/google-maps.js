@@ -25,6 +25,13 @@ module.exports = {
             short: element?.short_name,
           };
         }
+
+        if (element.types.includes('street_number')) {
+          componentsObj.streetNumber = {
+            long: element?.long_name,
+            short: element?.short_name,
+          };
+        }
       }
 
       if (
@@ -78,7 +85,15 @@ module.exports = {
   getFormattedAddress(addressComponents) {
     let addressStr = '';
 
+    if (addressComponents.streetNumber) {
+      addressStr = addressStr.concat(addressComponents.streetNumber.long);
+    }
+
     if (addressComponents.route) {
+      if (addressStr !== '') {
+        addressStr = addressStr.concat(' ');
+      }
+
       addressStr = addressStr.concat(addressComponents.route.long);
     }
 

@@ -63,19 +63,19 @@ module.exports = (sequelize, DataTypes) => {
         // eslint-disable-next-line no-unused-vars
         afterDestroy: async (instance, options) => {
           await sequelize.models.ListingAddress.destroy({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
 
           await sequelize.models.ListingPrice.destroy({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
 
           await sequelize.models.ListingStatus.destroy({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
@@ -84,19 +84,19 @@ module.exports = (sequelize, DataTypes) => {
         // eslint-disable-next-line no-unused-vars
         afterRestore: async (instance, options) => {
           await sequelize.models.ListingAddress.restore({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
 
           await sequelize.models.ListingPrice.restore({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
 
           await sequelize.models.ListingStatus.restore({
-            where: { userId: instance.where?.id },
+            where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });

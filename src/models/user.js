@@ -67,7 +67,7 @@ module.exports = (sequelize, DataTypes) => {
         // eslint-disable-next-line no-unused-vars
         afterDestroy: async (instance, options) => {
           await sequelize.models.AuthLocal.destroy({
-            where: { userId: instance.where?.id },
+            where: { userId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });
@@ -76,7 +76,7 @@ module.exports = (sequelize, DataTypes) => {
         // eslint-disable-next-line no-unused-vars
         afterRestore: async (instance, options) => {
           await sequelize.models.AuthLocal.restore({
-            where: { userId: instance.where?.id },
+            where: { userId: instance.id },
           }).catch((error) => {
             logger.error(error);
           });

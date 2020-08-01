@@ -61,10 +61,21 @@ class ListingController extends BaseController {
           }
         );
 
+        const listingStatusObj = await models.ListingStatus.create(
+          {
+            statusType: 'available',
+            listingId: listingObj.id,
+          },
+          {
+            transaction: t,
+          }
+        );
+
         return {
           listing: listingObj,
           listingPrice: listingPriceObj,
           listingAddress: listingAddressObj,
+          listingStatus: listingStatusObj,
         };
       });
 
@@ -77,6 +88,7 @@ class ListingController extends BaseController {
         submittedAddress: result.listingAddress.submittedAddress,
         formattedAddress: result.listingAddress.formattedAddress,
         addressNote: result.listingAddress.note,
+        status: result.listingStatus.statusType,
       };
 
       return this.created(res, responsObj);

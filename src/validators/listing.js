@@ -71,14 +71,13 @@ module.exports = {
     BODY: Joi.object({
       // title: Joi.string() // TODO: Make custom error message.
       //   .regex(/^[\w ]*[^\W_][\w ]*$/) // Letters, numbers and spaces only.
-      //   .max(256)
-      //   .required(),
+      //   .max(256),
       description: Joi.string().min(128),
-      // listingType: Joi.string().valid('rent', 'sell').required(),
+      // listingType: Joi.string().valid('rent', 'sell'),
       // address: Joi.string(),
       addressNote: Joi.string().max(256),
-      priceValue: Joi.number().positive().required(),
-      // currencyTypeIso: Joi.string().length(3).uppercase().required(), // Limit to AUD?
+      priceValue: Joi.number().positive(),
+      // currencyTypeIso: Joi.string().length(3).uppercase(), // Limit to AUD?
     }),
   },
 

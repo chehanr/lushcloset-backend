@@ -26,6 +26,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasMany(models.ListingEnquiry, {
+        as: 'listingEnquiries',
+        foreignKey: 'listingId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
     }
   }
 
@@ -89,11 +96,23 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.ListingEnquiry.destroy({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
         afterBulkRestore: async (instance, options) => {
           await sequelize.models.AuthProvider.restore({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.ListingEnquiry.restore({
             where: { userId: instance.where?.id },
           }).catch((error) => {
             logger.error(error);

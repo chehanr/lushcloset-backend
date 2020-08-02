@@ -30,6 +30,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasMany(models.ListingEnquiry, {
+        as: 'listingEnquiries',
+        foreignKey: 'listingId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
     }
   }
 
@@ -97,6 +104,24 @@ module.exports = (sequelize, DataTypes) => {
 
           await sequelize.models.ListingStatus.restore({
             where: { listingId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+        },
+
+        // eslint-disable-next-line no-unused-vars
+        afterBulkDestroy: async (instance, options) => {
+          await sequelize.models.ListingEnquiry.destroy({
+            where: { listingId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+        },
+
+        // eslint-disable-next-line no-unused-vars
+        afterBulkRestore: async (instance, options) => {
+          await sequelize.models.ListingEnquiry.restore({
+            where: { listingId: instance.where?.id },
           }).catch((error) => {
             logger.error(error);
           });

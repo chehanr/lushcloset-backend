@@ -9,6 +9,7 @@ const router = express.Router();
 
 // /                          get, post
 // /:listingId                get, put, delete
+// /:listingId/enquiries      get, post
 
 router.get(
   '/',
@@ -52,6 +53,17 @@ router.delete(
   validationMiddleware(listingValidator.deleteListingItemSchema),
   (req, res) => {
     listingController.deleteListingItem(req, res);
+  }
+);
+
+router.post(
+  '/:listingId/enquiries',
+  authMiddleware.authRequired,
+  validationMiddleware(
+    listingValidator.createListingItemListingEnquiryItemSchema
+  ),
+  (req, res) => {
+    listingController.createListingItemListingEnquiryItem(req, res);
   }
 );
 

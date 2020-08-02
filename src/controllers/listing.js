@@ -665,6 +665,104 @@ class ListingController extends BaseController {
       return this.fail(res, error);
     }
   }
+
+  /**
+   * Create a listing enquiry for a listing \
+   * with params `listinId`.
+   */
+  async createListingItemListingEnquiryItem(req, res) {
+    const errorResponseObj = { validation: {} };
+
+    if (req.validated.params?.error) {
+      errorResponseObj.validation.params = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.body?.error) {
+      errorResponseObj.validation.body = req.validated.body.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj) {
+        if (listingObj.listingStatus.statusType !== 'available') {
+          return this.forbidden(
+            res,
+            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
+          );
+        }
+
+        if (listingObj.userId === req.user.id) {
+          return this.forbidden(res, 'Listing creator cannot enquire.');
+        }
+
+        const existingEnquiryObjs = await listingObj.getListingEnquiries({
+          where: {
+            userId: req.user.id,
+            enquiryStatus: 'pending',
+          },
+        });
+
+        if (existingEnquiryObjs.length > 0) {
+          return this.forbidden(
+            res,
+            `Previous enquiry (${existingEnquiryObjs.map(
+              (row) => `${row.id}`
+            )}) is pending review.`
+          );
+        }
+
+        const enquiryObj = await models.ListingEnquiry.create({
+          enquiryStatus: 'pending',
+          note: req.validated.body.value?.note || null,
+          userId: req.user.id,
+          listingId: listingObj.id,
+        });
+
+        // sequelize bruh.
+        const enquiryObjUser = await enquiryObj.getUser();
+
+        const responseObj = {
+          id: enquiryObj.id,
+          status: enquiryObj.enquiryStatus,
+          note: enquiryObj.note || null,
+          listing: {
+            id: listingObj.id,
+            title: listingObj.title,
+          },
+          user: {
+            id: enquiryObjUser.id,
+            name: enquiryObjUser.name,
+          },
+          createdAt: enquiryObj.createdAt,
+          updatedAt: enquiryObj.updatedAt,
+        };
+
+        return this.ok(res, responseObj);
+      }
+      return this.notFound(res, null);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
 }
 
 module.exports = new ListingController();

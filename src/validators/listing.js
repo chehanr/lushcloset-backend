@@ -86,4 +86,14 @@ module.exports = {
       listingId: Joi.string().uuid().required(),
     }),
   },
+
+  createListingItemListingEnquiryItemSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+
+    BODY: Joi.object({
+      note: Joi.string().max(256),
+    }),
+  },
 };

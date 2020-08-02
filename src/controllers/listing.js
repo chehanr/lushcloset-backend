@@ -763,6 +763,174 @@ class ListingController extends BaseController {
       return this.fail(res, error);
     }
   }
+
+  /**
+   * Retrieve a list of listing enquiries for a listing \
+   * with params `listingId`.
+   */
+  async retrieveListingItemListingEnquiryList(req, res) {
+    const errorResponseObj = { validation: {} };
+
+    if (req.validated.params?.error) {
+      errorResponseObj.validation.params = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.query?.error) {
+      errorResponseObj.validation.query = req.validated.query.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj.userId !== req.user.id) {
+        return this.unauthorized(res, null);
+      }
+
+      const orderSqlQuery = [];
+
+      if (typeof req.validated.query.value.orderBy !== 'undefined') {
+        let queries = [];
+
+        if (Array.isArray(req.validated.query.value.orderBy)) {
+          queries = [...req.validated.query.value.orderBy];
+        } else {
+          queries = [req.validated.query.value.orderBy];
+        }
+
+        queries.forEach((queryVal) => {
+          switch (queryVal) {
+            case 'createdAt':
+              orderSqlQuery.push(['createdAt', 'ASC']);
+              break;
+            case '-createdAt':
+              orderSqlQuery.push(['createdAt', 'DESC']);
+              break;
+            case 'updatedAt':
+              orderSqlQuery.push(['updatedAt', 'ASC']);
+              break;
+            case '-updatedAt':
+              orderSqlQuery.push(['updatedAt', 'DESC']);
+              break;
+            default:
+              break;
+          }
+        });
+      } else {
+        // Order by `createdAt` by default.
+        orderSqlQuery.push(['createdAt', 'DESC']);
+      }
+
+      const whereSqlQuery = {};
+
+      if (typeof req.validated.query.value.filterBy !== 'undefined') {
+        let queries = [];
+
+        if (Array.isArray(req.validated.query.value.filterBy)) {
+          queries = [...req.validated.query.value.filterBy];
+        } else {
+          queries = [req.validated.query.value.filterBy];
+        }
+
+        queries.forEach((queryVal) => {
+          switch (queryVal) {
+            case 'IsPending':
+              whereSqlQuery.enquiryStatus = 'pending';
+              break;
+            case 'IsAccepted':
+              whereSqlQuery.enquiryStatus = 'accepted';
+              break;
+            case 'isRejected':
+              whereSqlQuery.enquiryStatus = 'rejected';
+              break;
+            case 'isCompleted':
+              whereSqlQuery.enquiryStatus = 'completed';
+              break;
+            default:
+              break;
+          }
+        });
+      }
+
+      const paginationSqlQuery = {
+        limit: apiConfig.defaultPaginationLimit,
+        offset: 0,
+      };
+
+      if (typeof req.validated.query.value.limit !== 'undefined') {
+        if (req.validated.query.value.limit <= apiConfig.maxPaginationLimit)
+          paginationSqlQuery.limit = req.validated.query.value.limit;
+      }
+
+      if (typeof req.validated.query.value.offset !== 'undefined') {
+        paginationSqlQuery.offset = req.validated.query.value.offset;
+      }
+
+      const enquiryObjs = await models.ListingEnquiry.findAndCountAll({
+        where: {
+          ...whereSqlQuery,
+          listingId: listingObj.id,
+        },
+        order: [...orderSqlQuery],
+        ...paginationSqlQuery,
+        include: [
+          {
+            model: models.User,
+            as: 'user',
+          },
+          {
+            model: models.Listing,
+            as: 'listing',
+          },
+        ],
+      });
+
+      const responseObj = {
+        count: enquiryObjs.count,
+        ...paginationSqlQuery,
+        listings: [],
+      };
+
+      enquiryObjs.rows.forEach((row) => {
+        responseObj.listings.push({
+          id: row.id,
+          status: row.enquiryStatus,
+          note: row.note || null,
+          listing: {
+            id: row.listing.id,
+            title: row.listing.title,
+          },
+          user: {
+            id: row.user.id,
+            name: row.user.name,
+          },
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        });
+      });
+
+      return this.ok(res, responseObj);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
 }
 
 module.exports = new ListingController();

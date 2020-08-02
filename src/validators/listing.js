@@ -96,4 +96,26 @@ module.exports = {
       note: Joi.string().max(256),
     }),
   },
+
+  retrieveListingItemListingEnquiryListSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+    QUERY: Joi.object({
+      orderBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+        ),
+        Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+      ),
+      filterBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid('IsPending', 'IsAccepted', 'isRejected', 'isCompleted')
+        ),
+        Joi.valid('IsPending', 'IsAccepted', 'isRejected', 'isCompleted')
+      ),
+      limit: Joi.number().positive().allow(0),
+      offset: Joi.number().positive().allow(0),
+    }),
+  },
 };

@@ -56,6 +56,17 @@ router.delete(
   }
 );
 
+router.get(
+  '/:listingId/enquiries',
+  authMiddleware.authRequired,
+  validationMiddleware(
+    listingValidator.retrieveListingItemListingEnquiryListSchema
+  ),
+  (req, res) => {
+    listingController.retrieveListingItemListingEnquiryList(req, res);
+  }
+);
+
 router.post(
   '/:listingId/enquiries',
   authMiddleware.authRequired,

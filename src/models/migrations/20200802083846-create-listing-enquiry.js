@@ -3,7 +3,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      await queryInterface.createTable('listing_prices', {
+      await queryInterface.createTable('listing_enquiries', {
         id: {
           allowNull: false,
           defaultValue: Sequelize.UUIDV4,
@@ -65,7 +65,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      await queryInterface.dropTable('listing_prices');
+      await queryInterface.dropTable('listing_enquiries');
 
       return transaction.commit();
     } catch (error) {

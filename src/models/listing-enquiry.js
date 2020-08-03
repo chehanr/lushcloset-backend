@@ -1,5 +1,7 @@
 const { Model, UUIDV4 } = require('sequelize');
 
+const logger = require('../loaders/winston');
+
 module.exports = (sequelize, DataTypes) => {
   class ListingEnquiry extends Model {
     static associate(models) {
@@ -10,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.User, {
         as: 'user',
         foreignKey: 'userId',
+      });
+      this.hasOne(models.ListingRental, {
+        as: 'listingRental',
+        foreignKey: 'listingEnquiryId',
       });
     }
   }
@@ -36,6 +42,25 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       underscored: true,
       paranoid: true,
+      hooks: {
+        // eslint-disable-next-line no-unused-vars
+        afterDestroy: async (instance, options) => {
+          await sequelize.models.ListingRental.destroy({
+            where: { listingEnquiryId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+        },
+
+        // eslint-disable-next-line no-unused-vars
+        afterRestore: async (instance, options) => {
+          await sequelize.models.ListingRental.restore({
+            where: { listingEnquiryId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+        },
+      },
       tableName: 'listing_enquiries',
     }
   );

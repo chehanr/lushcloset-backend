@@ -26,7 +26,7 @@ module.exports = {
         cancelled_at: {
           type: Sequelize.DATE,
         },
-        enquiry_id: {
+        listing_enquiry_id: {
           allowNull: false,
           type: Sequelize.UUID,
           references: {

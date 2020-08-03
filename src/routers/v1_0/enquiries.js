@@ -21,4 +21,21 @@ router.get(
   }
 );
 
+router.put(
+  '/:enquiryId',
+  authMiddleware.authRequired,
+  validationMiddleware(enquiryValidator.updateListingEnquiryItemSchema),
+  (req, res) => {
+    enquiryController.updateListingEnquiryItem(req, res);
+  }
+);
+
+router.delete(
+  '/:enquiryId',
+  authMiddleware.authRequired,
+  validationMiddleware(enquiryValidator.deleteListingEnquirySchema),
+  (req, res) => {
+    enquiryController.deleteListingEnquiryItem(req, res);
+  }
+);
 module.exports = router;

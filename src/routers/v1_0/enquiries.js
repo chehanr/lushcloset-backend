@@ -38,4 +38,32 @@ router.delete(
     enquiryController.deleteListingEnquiryItem(req, res);
   }
 );
+
+router.post(
+  '/:enquiryId/accept',
+  authMiddleware.authRequired,
+  validationMiddleware(enquiryValidator.acceptListingEnquiryItemSchema),
+  (req, res) => {
+    enquiryController.acceptListingEnquiryItem(req, res);
+  }
+);
+
+router.post(
+  '/:enquiryId/reject',
+  authMiddleware.authRequired,
+  validationMiddleware(enquiryValidator.rejectListingEnquiryItemSchema),
+  (req, res) => {
+    enquiryController.rejectListingEnquiryItem(req, res);
+  }
+);
+
+router.post(
+  '/:enquiryId/cancel',
+  authMiddleware.authRequired,
+  validationMiddleware(enquiryValidator.cancelListingEnquiryItemSchema),
+  (req, res) => {
+    enquiryController.cancelListingEnquiryItem(req, res);
+  }
+);
+
 module.exports = router;

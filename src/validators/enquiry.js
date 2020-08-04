@@ -21,4 +21,22 @@ module.exports = {
       enquiryId: Joi.string().uuid().required(),
     }),
   },
+
+  acceptListingEnquiryItemSchema: {
+    PARAMS: Joi.object({
+      enquiryId: Joi.string().uuid().required(),
+    }),
+  },
+
+  rejectListingEnquiryItemSchema: {
+    PARAMS: Joi.object({
+      enquiryId: Joi.string().uuid().required(),
+    }),
+  },
+
+  cancelListingEnquiryItemSchema: {
+    PARAMS: Joi.object({
+      enquiryId: Joi.string().uuid().required(),
+    }),
+  },
 };

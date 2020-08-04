@@ -744,14 +744,15 @@ class ListingController extends BaseController {
           id: enquiryObj.id,
           status: enquiryObj.enquiryStatus,
           note: enquiryObj.note || null,
-          listing: {
-            id: listingObj.id,
-            title: listingObj.title,
-          },
           user: {
             id: enquiryObjUser.id,
             name: enquiryObjUser.name,
           },
+          listing: {
+            id: listingObj.id,
+            title: listingObj.title,
+          },
+          rental: null,
           createdAt: enquiryObj.createdAt,
           updatedAt: enquiryObj.updatedAt,
         };
@@ -899,6 +900,10 @@ class ListingController extends BaseController {
             model: models.Listing,
             as: 'listing',
           },
+          {
+            model: models.ListingRental,
+            as: 'listingRental',
+          },
         ],
       });
 
@@ -909,21 +914,31 @@ class ListingController extends BaseController {
       };
 
       enquiryObjs.rows.forEach((row) => {
-        responseObj.listings.push({
+        const obj = {
           id: row.id,
           status: row.enquiryStatus,
           note: row.note || null,
-          listing: {
-            id: row.listing.id,
-            title: row.listing.title,
-          },
           user: {
             id: row.user.id,
             name: row.user.name,
           },
+          listing: {
+            id: row.listing.id,
+            title: row.listing.title,
+          },
+          rental: null,
           createdAt: row.createdAt,
           updatedAt: row.updatedAt,
-        });
+        };
+
+        if (row.listingRental) {
+          obj.rental = {
+            id: row.listingRental.id,
+            status: row.listingRental.rentalStatus,
+          };
+        }
+
+        responseObj.listings.push(obj);
       });
 
       return this.ok(res, responseObj);

@@ -108,6 +108,10 @@ class EnquiryController extends BaseController {
               model: models.Listing,
               as: 'listing',
             },
+            {
+              model: models.ListingRental,
+              as: 'listingRental',
+            },
           ],
         }
       );
@@ -117,7 +121,11 @@ class EnquiryController extends BaseController {
           return this.unauthorized(res, null);
         }
 
-        if (enquiryObj.enquiryStatus !== 'pending') {
+        if (
+          ['accepted', 'rejected', 'completed'].some(
+            (status) => enquiryObj.enquiryStatus === status
+          )
+        ) {
           return this.forbidden(
             res,
             `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
@@ -145,9 +153,17 @@ class EnquiryController extends BaseController {
             id: enquiryObj.listing.id,
             title: enquiryObj.listing.title,
           },
+          rental: null,
           createdAt: enquiryObj.createdAt,
           updatedAt: enquiryObj.updatedAt,
         };
+
+        if (enquiryObj.listingRental) {
+          responseObj.rental = {
+            id: enquiryObj.listingRental.id,
+            status: enquiryObj.listingRental.rentalStatus,
+          };
+        }
 
         return this.ok(res, responseObj);
       }
@@ -190,8 +206,9 @@ class EnquiryController extends BaseController {
         }
 
         if (
-          enquiryObj.enquiryStatus === 'accepted' ||
-          enquiryObj.enquiryStatus === 'rejected'
+          ['accepted', 'rejected', 'completed'].some(
+            (status) => enquiryObj.enquiryStatus === status
+          )
         ) {
           return this.forbidden(
             res,

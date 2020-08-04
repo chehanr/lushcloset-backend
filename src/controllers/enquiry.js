@@ -28,15 +28,18 @@ class EnquiryController extends BaseController {
               model: models.Listing,
               as: 'listing',
             },
+            {
+              model: models.ListingRental,
+              as: 'listingRental',
+            },
           ],
         }
       );
 
       if (enquiryObj) {
         if (
-          !(
-            enquiryObj.userId === req.user.id ||
-            enquiryObj.listing.userId === req.user.id
+          ![enquiryObj.userId, enquiryObj.listing.userId].some(
+            (userId) => req.user.id === userId
           )
         ) {
           return this.unauthorized(res, null);
@@ -53,9 +56,17 @@ class EnquiryController extends BaseController {
             id: enquiryObj.listing.id,
             title: enquiryObj.listing.title,
           },
+          rental: null,
           createdAt: enquiryObj.createdAt,
           updatedAt: enquiryObj.updatedAt,
         };
+
+        if (enquiryObj.listingRental) {
+          responseObj.rental = {
+            id: enquiryObj.listingRental.id,
+            status: enquiryObj.listingRental.rentalStatus,
+          };
+        }
 
         return this.ok(res, responseObj);
       }
@@ -422,8 +433,11 @@ class EnquiryController extends BaseController {
           );
         }
 
+        // Unnecessary if?
         if (enquiryObj.listingRental) {
           enquiryObj.listingRental.rentalStatus = 'cancelled';
+
+          await enquiryObj.listingRental.save();
         }
 
         enquiryObj.enquiryStatus = 'completed';

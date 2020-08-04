@@ -252,6 +252,12 @@ class EnquiryController extends BaseController {
             {
               model: models.Listing,
               as: 'listing',
+              include: [
+                {
+                  model: models.ListingStatus,
+                  as: 'listingStatus',
+                },
+              ],
             },
           ],
         }
@@ -273,8 +279,16 @@ class EnquiryController extends BaseController {
           );
         }
 
-        const result = await models.sequelize.transaction(async (t) => {
-          const rentalObj = await models.ListingRental.create(
+        const newRentalObj = await models.sequelize.transaction(async (t) => {
+          enquiryObj.listing.listingStatus.statusType = 'rented';
+
+          await enquiryObj.listing.listingStatus.save({ transaction: t });
+
+          enquiryObj.enquiryStatus = 'accepted';
+
+          await enquiryObj.save({ transaction: t });
+
+          return models.ListingRental.create(
             {
               rentalStatus: 'pending',
               listingEnquiryId: enquiryObj.id,
@@ -283,33 +297,25 @@ class EnquiryController extends BaseController {
               transaction: t,
             }
           );
-
-          enquiryObj.enquiryStatus = 'accepted';
-
-          const updatedEnquiryObj = await enquiryObj.save({
-            transaction: t,
-          });
-
-          return { rental: rentalObj, enquiry: updatedEnquiryObj };
         });
 
         const responseObj = {
-          id: result.enquiry.id,
-          status: result.enquiry.enquiryStatus,
+          id: enquiryObj.id,
+          status: enquiryObj.enquiryStatus,
           user: {
-            id: result.enquiry.user.id,
-            name: result.enquiry.user.name,
+            id: enquiryObj.user.id,
+            name: enquiryObj.user.name,
           },
           listing: {
-            id: result.enquiry.listing.id,
-            title: result.enquiry.listing.title,
+            id: enquiryObj.listing.id,
+            title: enquiryObj.listing.title,
           },
           rental: {
-            id: result.rental.id,
-            status: result.rental.rentalStatus,
+            id: newRentalObj.id,
+            status: newRentalObj.rentalStatus,
           },
-          createdAt: result.enquiry.createdAt,
-          updatedAt: result.enquiry.updatedAt,
+          createdAt: enquiryObj.createdAt,
+          updatedAt: enquiryObj.updatedAt,
         };
 
         return this.ok(res, responseObj);
@@ -421,6 +427,12 @@ class EnquiryController extends BaseController {
             {
               model: models.Listing,
               as: 'listing',
+              include: [
+                {
+                  model: models.ListingStatus,
+                  as: 'listingStatus',
+                },
+              ],
             },
             {
               model: models.ListingRental,
@@ -450,16 +462,25 @@ class EnquiryController extends BaseController {
           );
         }
 
-        // Unnecessary if?
-        if (enquiryObj.listingRental) {
-          enquiryObj.listingRental.rentalStatus = 'cancelled';
+        await models.sequelize.transaction(async (t) => {
+          // Unnecessary if?
+          if (enquiryObj.listingRental) {
+            enquiryObj.listingRental.rentalStatus = 'cancelled';
+            enquiryObj.listingRental.cancelledAt = models.sequelize.literal(
+              'CURRENT_TIMESTAMP'
+            );
 
-          await enquiryObj.listingRental.save();
-        }
+            await enquiryObj.listingRental.save({ transaction: t });
+          }
 
-        enquiryObj.enquiryStatus = 'completed';
+          enquiryObj.listing.listingStatus.statusType = 'available';
 
-        await enquiryObj.save();
+          await enquiryObj.listing.listingStatus.save({ transaction: t });
+
+          enquiryObj.enquiryStatus = 'completed';
+
+          await enquiryObj.save({ transaction: t });
+        });
 
         const responseObj = {
           id: enquiryObj.id,

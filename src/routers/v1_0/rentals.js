@@ -20,4 +20,22 @@ router.get(
   }
 );
 
+router.post(
+  '/:rentalId/verify/pickup',
+  authMiddleware.authRequired,
+  validationMiddleware(rentalValidator.verifyPickupListingRentalItemSchema),
+  (req, res) => {
+    rentalController.verifyPickupListingRentalItem(req, res);
+  }
+);
+
+router.post(
+  '/:rentalId/verify/return',
+  authMiddleware.authRequired,
+  validationMiddleware(rentalValidator.verifyReturnListingRentalItemSchema),
+  (req, res) => {
+    rentalController.verifyReturnListingRentalItem(req, res);
+  }
+);
+
 module.exports = router;

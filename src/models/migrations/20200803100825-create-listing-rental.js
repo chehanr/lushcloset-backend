@@ -17,6 +17,16 @@ module.exports = {
           type: Sequelize.ENUM,
           values: ['pending', 'picked', 'returned', 'cancelled'],
         },
+        pick_verify_code: {
+          allowNull: false,
+          defaultValue: Sequelize.UUIDV4,
+          type: Sequelize.UUID,
+        },
+        return_verify_code: {
+          allowNull: false,
+          defaultValue: Sequelize.UUIDV4,
+          type: Sequelize.UUID,
+        },
         picked_at: {
           type: Sequelize.DATE,
         },

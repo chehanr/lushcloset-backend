@@ -24,6 +24,16 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 'pending',
         type: DataTypes.ENUM('pending', 'picked', 'returned', 'cancelled'),
       },
+      pickVerifyCode: {
+        allowNull: false,
+        defaultValue: UUIDV4,
+        type: DataTypes.UUID,
+      },
+      returnVerifyCode: {
+        allowNull: false,
+        defaultValue: UUIDV4,
+        type: DataTypes.UUID,
+      },
       pickedAt: {
         type: DataTypes.DATE,
       },

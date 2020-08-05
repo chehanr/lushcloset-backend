@@ -1,4 +1,6 @@
-# LushCloset-backend: API for a P2P clothes rental platform
+# lushcloset-backend: API for a P2P clothes rental platform
+
+![CI](https://github.com/chehanr/lushcloset-backend/workflows/CI/badge.svg)
 
 Swinburne CS final year group project (Software Engineering Project A - B)
 

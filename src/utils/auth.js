@@ -1,5 +1,5 @@
 const jsonwebtoken = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 const serverConfig = require('../configs/server');
 
@@ -21,8 +21,20 @@ module.exports = {
    * @param  {String} plainTextPwd Password.
    * @return {String}              Hash.
    */
-  hashPassword: async (plainTextPwd) => {
-    return bcrypt.hash(plainTextPwd, serverConfig.bcryptSaltRounds);
+  hashPassword: (plainTextPwd) => {
+    return new Promise((resolve, reject) => {
+      bcryptjs.hash(
+        plainTextPwd,
+        serverConfig.bcryptSaltRounds,
+        (error, hash) => {
+          if (error) {
+            return reject(error);
+          }
+
+          return resolve(hash);
+        }
+      );
+    });
   },
 
   /**
@@ -31,7 +43,15 @@ module.exports = {
    * @param  {String} hashPwd      Hashed value.
    * @return {Boolean}             result.
    */
-  matchPassword: async (plainTextPwd, hashPwd) => {
-    return bcrypt.compare(plainTextPwd, hashPwd);
+  matchPassword: (plainTextPwd, hashPwd) => {
+    return new Promise((resolve, reject) => {
+      bcryptjs.compare(plainTextPwd, hashPwd, (error, isSuccess) => {
+        if (error) {
+          return reject(error);
+        }
+
+        return resolve(isSuccess);
+      });
+    });
   },
 };

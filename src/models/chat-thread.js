@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      // For filtering.
+      this.hasMany(models.ChatUser, {
+        foreignKey: 'chatThreadId',
+      });
       this.hasMany(models.ChatMessage, {
         as: 'chatMessages',
         foreignKey: 'chatThreadId',

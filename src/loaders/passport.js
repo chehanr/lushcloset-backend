@@ -42,4 +42,35 @@ passport.use(
   )
 );
 
+const socketTokenExtractor = function (socket) {
+  let token = null;
+
+  if (socket && socket.handshake && socket.handshake.query) {
+    token = socket.handshake.query.token;
+  }
+
+  return token;
+};
+
+passport.use(
+  'jwt-socket-io',
+  new JwtStrategy(
+    {
+      jwtFromRequest: socketTokenExtractor,
+      secretOrKey: serverConfig.jwtSecret,
+    },
+    async (jwtPayload, done) => {
+      try {
+        const userObj = await models.User.findByPk(jwtPayload.user.id);
+
+        if (userObj) return done(null, userObj);
+
+        return done(null, false);
+      } catch (error) {
+        return done(error, false);
+      }
+    }
+  )
+);
+
 module.exports = passport;

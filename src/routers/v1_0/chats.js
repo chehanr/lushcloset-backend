@@ -56,4 +56,13 @@ router.get(
   }
 );
 
+router.get(
+  '/:chatTheadId/messages/:chatMessageId',
+  authMiddleware.authRequired,
+  validationMiddleware(chatValidator.retrieveChatMessageItemSchema),
+  (req, res) => {
+    chatController.retrieveChatMessageItem(req, res);
+  }
+);
+
 module.exports = router;

@@ -56,4 +56,11 @@ module.exports = {
       content: Joi.string().required(),
     }),
   },
+
+  retrieveChatMessageItemSchema: {
+    PARAMS: Joi.object({
+      chatTheadId: Joi.string().uuid().required(),
+      chatMessageId: Joi.string().uuid().required(),
+    }),
+  },
 };

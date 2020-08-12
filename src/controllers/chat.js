@@ -550,6 +550,81 @@ class ChatController extends BaseController {
       return this.fail(res, error);
     }
   }
+
+  /**
+   * Retrieve a chat message \
+   * with params `chatTheadId` and `chatMessageId`.
+   */
+  async retrieveChatMessageItem(req, res) {
+    const errorResponseObj = { validation: {} };
+
+    if (req.validated.params?.error) {
+      errorResponseObj.validation.params = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const chatThreadObj = await models.ChatThread.findOne({
+        where: {
+          id: req.validated.params.value.chatTheadId,
+        },
+        include: [
+          {
+            model: models.ChatUser,
+            as: 'chatUsers',
+            where: {
+              userId: req.user.id,
+            },
+          },
+        ],
+      });
+
+      if (!chatThreadObj) {
+        return this.notFound(res, null);
+      }
+
+      const chatMessageObj = await models.ChatMessage.findOne({
+        where: {
+          id: req.validated.params.value.chatMessageId,
+        },
+        include: [
+          {
+            model: models.ChatUser,
+            as: 'chatUser',
+            include: [
+              {
+                model: models.User,
+                as: 'user',
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!chatMessageObj) {
+        return this.notFound(res, null);
+      }
+
+      const responseObj = {
+        id: chatMessageObj.id,
+        content: chatMessageObj.content,
+        participant: {
+          id: chatMessageObj.chatUser.id,
+          user: {
+            id: chatMessageObj.chatUser.user.id,
+            name: chatMessageObj.chatUser.user.name,
+          },
+        },
+        createdAt: chatMessageObj.createdAt,
+        updatedAt: chatMessageObj.updatedAt,
+      };
+
+      return this.ok(res, responseObj);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
 }
 
 module.exports = new ChatController();

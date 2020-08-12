@@ -1,6 +1,7 @@
 const BaseController = require('./base');
 const models = require('../models');
 const apiConfig = require('../configs/api');
+const socket = require('../socket-io');
 
 class ChatController extends BaseController {
   /**
@@ -512,8 +513,6 @@ class ChatController extends BaseController {
         );
       });
 
-      console.log(chatMessageObj.chatUser);
-
       const responseObj = {
         id: chatMessageObj.id,
         content: chatMessageObj.content,
@@ -527,6 +526,24 @@ class ChatController extends BaseController {
         createdAt: chatMessageObj.createdAt,
         updatedAt: chatMessageObj.updatedAt,
       };
+
+      // Emit a new socket event.
+      const socketResponseObj = {
+        id: chatMessageObj.id,
+        participant: {
+          id: chatUserObj.id,
+          user: {
+            id: chatUserObj.user.id,
+            name: chatUserObj.user.name,
+          },
+        },
+        createdAt: chatMessageObj.createdAt,
+      };
+
+      socket
+        .of('/chat')
+        .to(`chat-thread-${chatThreadObj.id}`)
+        .emit('chat.new-message', socketResponseObj);
 
       return this.created(res, responseObj);
     } catch (error) {

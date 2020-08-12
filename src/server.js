@@ -3,6 +3,7 @@ const http = require('http');
 const app = require('./app');
 const logger = require('./loaders/winston');
 const serverConfig = require('./configs/server');
+const socketIo = require('./socket-io');
 
 const server = http.createServer(app);
 
@@ -54,5 +55,7 @@ app.set('port', port);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+socketIo.attach(server);
 
 module.exports = server;

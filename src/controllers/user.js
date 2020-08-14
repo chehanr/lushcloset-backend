@@ -1,5 +1,6 @@
 const models = require('../models');
 const BaseController = require('./base');
+const { errorResponses } = require('../constants/errors');
 
 class UserController extends BaseController {
   /**
@@ -7,10 +8,11 @@ class UserController extends BaseController {
    * with params `userId`.
    */
   async retrieveUserItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -41,16 +43,18 @@ class UserController extends BaseController {
    * with params `userId`.
    */
   async updateUserItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }

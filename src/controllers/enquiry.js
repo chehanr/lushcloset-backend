@@ -1,5 +1,6 @@
 const BaseController = require('./base');
 const models = require('../models');
+const { errorResponses } = require('../constants/errors');
 
 class EnquiryController extends BaseController {
   /**
@@ -7,10 +8,11 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async retrieveListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -81,16 +83,18 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async updateListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -126,10 +130,10 @@ class EnquiryController extends BaseController {
             (status) => enquiryObj.enquiryStatus === status
           )
         ) {
-          return this.forbidden(
-            res,
-            `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
-          );
+          errorResponseObj = errorResponses.lockedEnquiryError;
+          errorResponseObj.extra = { enquiryStatus: enquiryObj.enquiryStatus };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         if (
@@ -179,10 +183,11 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async deleteListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -210,10 +215,10 @@ class EnquiryController extends BaseController {
             (status) => enquiryObj.enquiryStatus === status
           )
         ) {
-          return this.forbidden(
-            res,
-            `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
-          );
+          errorResponseObj = errorResponses.lockedEnquiryError;
+          errorResponseObj.extra = { enquiryStatus: enquiryObj.enquiryStatus };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         await enquiryObj.destroy();
@@ -232,10 +237,11 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async acceptListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -273,10 +279,10 @@ class EnquiryController extends BaseController {
             (status) => enquiryObj.enquiryStatus === status
           )
         ) {
-          return this.forbidden(
-            res,
-            `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
-          );
+          errorResponseObj = errorResponses.lockedEnquiryError;
+          errorResponseObj.extra = { enquiryStatus: enquiryObj.enquiryStatus };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         const newRentalObj = await models.sequelize.transaction(async (t) => {
@@ -332,10 +338,11 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async rejectListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -367,10 +374,10 @@ class EnquiryController extends BaseController {
             (status) => enquiryObj.enquiryStatus === status
           )
         ) {
-          return this.forbidden(
-            res,
-            `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
-          );
+          errorResponseObj = errorResponses.lockedEnquiryError;
+          errorResponseObj.extra = { enquiryStatus: enquiryObj.enquiryStatus };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         enquiryObj.enquiryStatus = 'rejected';
@@ -407,10 +414,11 @@ class EnquiryController extends BaseController {
    * with params `enquiryId`.
    */
   async cancelListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -456,10 +464,10 @@ class EnquiryController extends BaseController {
             (status) => enquiryObj.enquiryStatus === status
           )
         ) {
-          return this.forbidden(
-            res,
-            `The listing enquiry is locked (status: ${enquiryObj.enquiryStatus})`
-          );
+          errorResponseObj = errorResponses.lockedEnquiryError;
+          errorResponseObj.extra = { enquiryStatus: enquiryObj.enquiryStatus };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         await models.sequelize.transaction(async (t) => {

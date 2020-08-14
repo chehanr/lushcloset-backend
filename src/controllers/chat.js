@@ -2,16 +2,18 @@ const BaseController = require('./base');
 const models = require('../models');
 const apiConfig = require('../configs/api');
 const socket = require('../socket-io');
+const { errorResponses } = require('../constants/errors');
 
 class ChatController extends BaseController {
   /**
    * Create a chat thread.
    */
   async createChatThreadItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -22,11 +24,11 @@ class ChatController extends BaseController {
       );
 
       if (!otherUserObj) {
-        return this.unprocessableEntity(res, 'Invalid participant id');
+        return this.badRequest(res, errorResponses.invalidChatParticipantError);
       }
 
       if (otherUserObj.id === req.user.id) {
-        return this.unprocessableEntity(res, 'Invalid participant id');
+        return this.badRequest(res, errorResponses.invalidChatParticipantError);
       }
 
       let chatThreadObj;
@@ -100,10 +102,11 @@ class ChatController extends BaseController {
    * Retrieve a list of chat threads.
    */
   async retrieveChatThreadList(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.query?.error) {
-      errorResponseObj.validation.query = req.validated.query.error;
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -220,10 +223,11 @@ class ChatController extends BaseController {
    * with params `chatTheadId`.
    */
   async retrieveChatThreadItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -286,16 +290,18 @@ class ChatController extends BaseController {
    * with params `chatTheadId`.
    */
   async retrieveChatMessageList(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.query?.error) {
-      errorResponseObj.validation.query = req.validated.query.error;
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -435,16 +441,18 @@ class ChatController extends BaseController {
    * with params `chatTheadId`.
    */
   async createChatMessageItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -556,10 +564,11 @@ class ChatController extends BaseController {
    * with params `chatTheadId` and `chatMessageId`.
    */
   async retrieveChatMessageItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }

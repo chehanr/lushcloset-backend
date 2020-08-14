@@ -4,16 +4,18 @@ const googleMapsHelper = require('../helpers/google-maps');
 const googleMapsUtils = require('../utils/google-maps');
 const apiUtils = require('../utils/api');
 const apiConfig = require('../configs/api');
+const { errorResponses } = require('../constants/errors');
 
 class ListingController extends BaseController {
   /**
    * Create a listing.
    */
   async createListingItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -23,7 +25,7 @@ class ListingController extends BaseController {
     );
 
     if (geocodingData.length === 0) {
-      return this.conflict(res, 'Failed to proccess listing address');
+      return this.badRequest(res, errorResponses.unprocessableLocationAddress);
     }
 
     try {
@@ -151,10 +153,11 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async retrieveListingItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -263,10 +266,11 @@ class ListingController extends BaseController {
    * TODO: Add lat lng search LMAO!!!!
    */
   async retrieveListingList(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.query?.error) {
-      errorResponseObj.validation.query = req.validated.query.error;
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -469,16 +473,18 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async updateListingItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -514,10 +520,12 @@ class ListingController extends BaseController {
         }
 
         if (listingObj.listingStatus.statusType !== 'available') {
-          return this.forbidden(
-            res,
-            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
-          );
+          errorResponseObj = errorResponses.lockedListingError;
+          errorResponseObj.extra = {
+            listingStatus: listingObj.listingStatus.statusType,
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         if (
@@ -618,10 +626,11 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async deleteListingItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -649,10 +658,12 @@ class ListingController extends BaseController {
         }
 
         if (listingObj.listingStatus.statusType !== 'available') {
-          return this.forbidden(
-            res,
-            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
-          );
+          errorResponseObj = errorResponses.lockedListingError;
+          errorResponseObj.extra = {
+            listingStatus: listingObj.listingStatus.statusType,
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         await listingObj.destroy();
@@ -671,16 +682,18 @@ class ListingController extends BaseController {
    * with params `listinId`.
    */
   async createListingItemListingEnquiryItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -704,14 +717,16 @@ class ListingController extends BaseController {
 
       if (listingObj) {
         if (listingObj.listingStatus.statusType !== 'available') {
-          return this.forbidden(
-            res,
-            `The listing is locked (status: ${listingObj.listingStatus.statusType})`
-          );
+          errorResponseObj = errorResponses.lockedListingError;
+          errorResponseObj.extra = {
+            listingStatus: listingObj.listingStatus.statusType,
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         if (listingObj.userId === req.user.id) {
-          return this.forbidden(res, 'Listing creator cannot enquire.');
+          return this.forbidden(res, null);
         }
 
         const existingEnquiryObjs = await listingObj.getListingEnquiries({
@@ -722,12 +737,12 @@ class ListingController extends BaseController {
         });
 
         if (existingEnquiryObjs.length > 0) {
-          return this.forbidden(
-            res,
-            `Previous enquiry (${existingEnquiryObjs.map(
-              (row) => `${row.id}`
-            )}) is pending review.`
-          );
+          errorResponseObj = errorResponses.previousPendingReviewEnquiryError;
+          errorResponseObj.extra = {
+            enquiryId: existingEnquiryObjs.map((obj) => obj.id),
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         const enquiryObj = await models.ListingEnquiry.create({
@@ -770,16 +785,18 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async retrieveListingItemListingEnquiryList(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.query?.error) {
-      errorResponseObj.validation.query = req.validated.query.error;
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }

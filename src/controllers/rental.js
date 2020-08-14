@@ -1,5 +1,6 @@
 const BaseController = require('./base');
 const models = require('../models');
+const { errorResponses } = require('../constants/errors');
 
 class RentalController extends BaseController {
   /**
@@ -7,10 +8,11 @@ class RentalController extends BaseController {
    * with params `rentalId`.
    */
   async retrieveListingRentalItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -93,16 +95,18 @@ class RentalController extends BaseController {
    * TODO: Fix response returning object for a dt;
    */
   async verifyPickupListingRentalItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -134,14 +138,19 @@ class RentalController extends BaseController {
 
         // Only pending rentals can be picked.
         if (rentalObj.rentalStatus !== 'pending') {
-          return this.forbidden(
-            res,
-            `The listing rental is locked (status: ${rentalObj.rentalStatus})`
-          );
+          errorResponseObj = errorResponses.lockedRentalError;
+          errorResponseObj.extra = {
+            rentalStatus: rentalObj.rentalStatus,
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         if (rentalObj.pickVerifyCode !== req.validated.body.value.code) {
-          return this.unprocessableEntity(res, 'Invalid verification code.');
+          return this.forbidden(
+            res,
+            errorResponses.invalidRentalVerificationCodeError
+          );
         }
 
         // Set rental status.
@@ -184,16 +193,18 @@ class RentalController extends BaseController {
    * TODO: Fix response returning object for a dt;
    */
   async verifyReturnListingRentalItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.params?.error) {
-      errorResponseObj.validation.params = req.validated.params.error;
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -231,14 +242,19 @@ class RentalController extends BaseController {
 
         // Only picked rentals can be returned.
         if (rentalObj.rentalStatus !== 'picked') {
-          return this.forbidden(
-            res,
-            `The listing rental is locked (status: ${rentalObj.rentalStatus})`
-          );
+          errorResponseObj = errorResponses.lockedRentalError;
+          errorResponseObj.extra = {
+            rentalStatus: rentalObj.rentalStatus,
+          };
+
+          return this.forbidden(res, errorResponseObj);
         }
 
         if (rentalObj.returnVerifyCode !== req.validated.body.value.code) {
-          return this.unprocessableEntity(res, 'Invalid verification code.');
+          return this.forbidden(
+            res,
+            errorResponses.invalidRentalVerificationCodeError
+          );
         }
 
         await models.sequelize.transaction(async (t) => {

@@ -1,16 +1,18 @@
 const BaseController = require('./base');
 const authUtils = require('../utils/auth');
 const models = require('../models');
+const { errorResponses } = require('../constants/errors');
 
 class AuthController extends BaseController {
   /**
    * Create a local user (register).
    */
   async createLocalUserItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -23,7 +25,7 @@ class AuthController extends BaseController {
       });
 
       if (foundUserObj) {
-        return this.conflict(res, 'User already exists');
+        return this.conflict(res, errorResponses.userAlreadyExistsError);
       }
 
       const newUserObj = await models.sequelize.transaction(async (t) => {
@@ -81,10 +83,11 @@ class AuthController extends BaseController {
    * Retrieve (POST) a local user (login).
    */
   async retrieveLocalUserItem(req, res) {
-    const errorResponseObj = { validation: {} };
+    let errorResponseObj;
 
     if (req.validated.body?.error) {
-      errorResponseObj.validation.body = req.validated.body.error;
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
@@ -129,7 +132,7 @@ class AuthController extends BaseController {
         return this.fail(res, 'Error creating token');
       }
 
-      return this.unauthorized(res, null);
+      return this.notFound(res, errorResponses.userNotFoundError);
     } catch (error) {
       return this.fail(res, error);
     }
@@ -164,7 +167,7 @@ class AuthController extends BaseController {
   }
 
   notAuthenticated(req, res) {
-    return this.unauthorized(res, 'Not authenticated');
+    return this.unauthorized(res, errorResponses.userNotAuthenticatedError);
   }
 }
 

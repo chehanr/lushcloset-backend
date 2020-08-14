@@ -86,7 +86,7 @@ const errorResponses = {
   },
   invalidRentalVerificationCodeError: {
     type: errorTypes.rentalError,
-    code: 'lockedRental',
+    code: 'invalidRentalVerificationCode',
     message: 'The listing rental verification code is invalid',
     extra: null,
   },

@@ -62,7 +62,7 @@ const errorResponses = {
   },
   previousPendingReviewEnquiryError: {
     type: errorTypes.enquiryError,
-    code: 'lockedListing',
+    code: 'previousPendingReviewEnquiry',
     message: 'Previous listing enquiry is pending review',
     extra: null,
   },

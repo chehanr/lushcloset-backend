@@ -25,7 +25,11 @@ module.exports = (schema) => {
     }
 
     if (schema.BODY) {
-      validation.body = schema.BODY.validate(req.body);
+      validation.body = schema.BODY.validate(req.fields);
+    }
+
+    if (schema.FILES) {
+      validation.files = schema.FILES.validate(req.files);
     }
 
     req.validated = validation;

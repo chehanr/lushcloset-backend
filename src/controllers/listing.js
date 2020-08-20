@@ -725,6 +725,12 @@ class ListingController extends BaseController {
           return this.forbidden(res, errorResponseObj);
         }
 
+        if (listingObj.listingType !== 'rent') {
+          errorResponseObj = errorResponses.notRentableError;
+
+          return this.forbidden(res, errorResponseObj);
+        }
+
         if (listingObj.userId === req.user.id) {
           return this.forbidden(res, null);
         }
@@ -956,6 +962,268 @@ class ListingController extends BaseController {
         }
 
         responseObj.listings.push(obj);
+      });
+
+      return this.ok(res, responseObj);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
+
+  /**
+   * Create a listing purchase for a listing \
+   * with params `listingId`.
+   */
+  async createListingItemListingPurchaseItem(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj) {
+        if (listingObj.listingStatus.statusType !== 'available') {
+          errorResponseObj = errorResponses.lockedListingError;
+          errorResponseObj.extra = {
+            listingStatus: listingObj.listingStatus.statusType,
+          };
+
+          return this.forbidden(res, errorResponseObj);
+        }
+
+        if (listingObj.listingType !== 'sell') {
+          errorResponseObj = errorResponses.notPurchasableError;
+
+          return this.forbidden(res, errorResponseObj);
+        }
+
+        if (listingObj.userId === req.user.id) {
+          return this.forbidden(res, null);
+        }
+
+        const purchaseObj = await models.sequelize.transaction(async (t) => {
+          listingObj.listingStatus.statusType = 'purchased';
+
+          await listingObj.listingStatus.save({ transaction: t });
+
+          return models.ListingPurchase.create(
+            {
+              purchaseStatus: 'pending',
+              userId: req.user.id,
+              listingId: listingObj.id,
+            },
+            { transaction: t }
+          );
+        });
+
+        // sequelize bruh.
+        const purchaseObjUser = await purchaseObj.getUser();
+
+        const responseObj = {
+          id: purchaseObj.id,
+          status: purchaseObj.purchaseStatus,
+          user: {
+            id: purchaseObjUser.id,
+            name: purchaseObjUser.name,
+          },
+          listing: {
+            id: listingObj.id,
+            title: listingObj.title,
+          },
+          createdAt: purchaseObj.createdAt,
+          updatedAt: purchaseObj.updatedAt,
+        };
+
+        return this.ok(res, responseObj);
+      }
+      return this.notFound(res, null);
+    } catch (error) {
+      return this.fail(res, error);
+    }
+  }
+
+  /**
+   * Retrieve a list of listing purchases for a listing \
+   * with params `listingId`.
+   */
+  async retrieveListingItemListingPurchaseList(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.query?.error) {
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    try {
+      const listingObj = await models.Listing.findByPk(
+        req.validated.params.value.listingId,
+        {
+          include: [
+            {
+              model: models.User,
+              as: 'user',
+            },
+            {
+              model: models.ListingStatus,
+              as: 'listingStatus',
+            },
+          ],
+        }
+      );
+
+      if (listingObj.userId !== req.user.id) {
+        return this.unauthorized(res, null);
+      }
+
+      const orderSqlQuery = [];
+
+      if (typeof req.validated.query.value.orderBy !== 'undefined') {
+        let queries = [];
+
+        if (Array.isArray(req.validated.query.value.orderBy)) {
+          queries = [...req.validated.query.value.orderBy];
+        } else {
+          queries = [req.validated.query.value.orderBy];
+        }
+
+        queries.forEach((queryVal) => {
+          switch (queryVal) {
+            case 'createdAt':
+              orderSqlQuery.push(['createdAt', 'ASC']);
+              break;
+            case '-createdAt':
+              orderSqlQuery.push(['createdAt', 'DESC']);
+              break;
+            case 'updatedAt':
+              orderSqlQuery.push(['updatedAt', 'ASC']);
+              break;
+            case '-updatedAt':
+              orderSqlQuery.push(['updatedAt', 'DESC']);
+              break;
+            default:
+              break;
+          }
+        });
+      } else {
+        // Order by `createdAt` by default.
+        orderSqlQuery.push(['createdAt', 'DESC']);
+      }
+
+      const whereSqlQuery = {};
+
+      if (typeof req.validated.query.value.filterBy !== 'undefined') {
+        let queries = [];
+
+        if (Array.isArray(req.validated.query.value.filterBy)) {
+          queries = [...req.validated.query.value.filterBy];
+        } else {
+          queries = [req.validated.query.value.filterBy];
+        }
+
+        queries.forEach((queryVal) => {
+          switch (queryVal) {
+            case 'IsPending':
+              whereSqlQuery.purchaseStatus = 'pending';
+              break;
+            case 'isCancelled':
+              whereSqlQuery.purchaseStatus = 'cancelled';
+              break;
+            case 'isPicked':
+              whereSqlQuery.purchaseStatus = 'picked';
+              break;
+            default:
+              break;
+          }
+        });
+      }
+
+      const paginationSqlQuery = {
+        limit: apiConfig.defaultPaginationLimit,
+        offset: 0,
+      };
+
+      if (typeof req.validated.query.value.limit !== 'undefined') {
+        if (req.validated.query.value.limit <= apiConfig.maxPaginationLimit)
+          paginationSqlQuery.limit = req.validated.query.value.limit;
+      }
+
+      if (typeof req.validated.query.value.offset !== 'undefined') {
+        paginationSqlQuery.offset = req.validated.query.value.offset;
+      }
+
+      const purchaseObjs = await models.ListingPurchase.findAndCountAll({
+        where: {
+          ...whereSqlQuery,
+          listingId: listingObj.id,
+        },
+        order: [...orderSqlQuery],
+        ...paginationSqlQuery,
+        include: [
+          {
+            model: models.User,
+            as: 'user',
+          },
+          {
+            model: models.Listing,
+            as: 'listing',
+          },
+        ],
+      });
+
+      const responseObj = {
+        count: purchaseObjs.count,
+        ...paginationSqlQuery,
+        purchases: [],
+      };
+
+      purchaseObjs.rows.forEach((row) => {
+        const obj = {
+          id: row.id,
+          status: row.purchaseStatus,
+          listing: {
+            id: row.listing.id,
+            title: row.listing.title,
+          },
+          purchaser: {
+            id: row.user.id,
+            name: row.user.name,
+          },
+          pickedAt: row.listing.pickedAt || null,
+          cancelledAt: row.listing.cancelledAt || null,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        };
+
+        responseObj.purchases.push(obj);
       });
 
       return this.ok(res, responseObj);

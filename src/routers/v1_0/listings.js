@@ -78,4 +78,26 @@ router.post(
   }
 );
 
+router.get(
+  '/:listingId/purchases',
+  authMiddleware.authRequired,
+  validationMiddleware(
+    listingValidator.retrieveListingItemListingPurchaseListSchema
+  ),
+  (req, res) => {
+    listingController.retrieveListingItemListingPurchaseList(req, res);
+  }
+);
+
+router.post(
+  '/:listingId/purchases',
+  authMiddleware.authRequired,
+  validationMiddleware(
+    listingValidator.createListingItemListingPurchaseItemSchema
+  ),
+  (req, res) => {
+    listingController.createListingItemListingPurchaseItem(req, res);
+  }
+);
+
 module.exports = router;

@@ -9,6 +9,7 @@ const errorTypes = {
   enquiryError: 'enquiryError',
   listingError: 'listingError',
   rentalError: 'rentalError',
+  purchaseError: 'purchaseError',
 };
 
 const errorResponses = {
@@ -84,10 +85,34 @@ const errorResponses = {
     message: 'The listing rental is locked',
     extra: null,
   },
+  notRentableError: {
+    type: errorTypes.listingError,
+    code: 'notRentable',
+    message: 'The listing cannot be rented.',
+    extra: null,
+  },
+  notPurchasableError: {
+    type: errorTypes.listingError,
+    code: 'notPurchasable',
+    message: 'The listing cannot be purchased.',
+    extra: null,
+  },
+  lockedPurchaseError: {
+    type: errorTypes.purchaseError,
+    code: 'lockedPurchase',
+    message: 'The listing purchase is locked',
+    extra: null,
+  },
   invalidRentalVerificationCodeError: {
     type: errorTypes.rentalError,
     code: 'invalidRentalVerificationCode',
     message: 'The listing rental verification code is invalid',
+    extra: null,
+  },
+  invalidPurchaseVerificationCodeError: {
+    type: errorTypes.purchaseError,
+    code: 'invalidPurchaseVerificationCode',
+    message: 'The listing purchase verification code is invalid',
     extra: null,
   },
 };

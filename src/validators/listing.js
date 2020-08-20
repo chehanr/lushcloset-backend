@@ -118,4 +118,30 @@ module.exports = {
       offset: Joi.number().positive().allow(0),
     }),
   },
+
+  createListingItemListingPurchaseItemSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+  },
+
+  retrieveListingItemListingPurchaseListSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+    QUERY: Joi.object({
+      orderBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+        ),
+        Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+      ),
+      filterBy: Joi.alternatives().try(
+        Joi.array().items(Joi.valid('IsPending', 'isCancelled', 'isPicked')),
+        Joi.valid('IsPending', 'isCancelled', 'isPicked')
+      ),
+      limit: Joi.number().positive().allow(0),
+      offset: Joi.number().positive().allow(0),
+    }),
+  },
 };

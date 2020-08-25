@@ -29,7 +29,9 @@ module.exports = (schema) => {
     }
 
     if (schema.FILES) {
-      validation.files = schema.FILES.validate(req.files);
+      validation.files = schema.FILES.validate(req.files, {
+        allowUnknown: true,
+      });
     }
 
     req.validated = validation;

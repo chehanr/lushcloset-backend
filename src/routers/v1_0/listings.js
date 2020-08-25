@@ -100,4 +100,13 @@ router.post(
   }
 );
 
+router.post(
+  '/:listingId/images',
+  authMiddleware.authRequired,
+  validationMiddleware(listingValidator.imageUploadSchema),
+  (req, res) => {
+    listingController.imageUploadSchema(req, res);
+  }
+);
+
 module.exports = router;

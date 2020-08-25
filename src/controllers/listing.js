@@ -1,9 +1,12 @@
 const BaseController = require('./base');
 const models = require('../models');
 const googleMapsHelper = require('../helpers/google-maps');
+const B2Helper = require('../helpers/b2');
 const googleMapsUtils = require('../utils/google-maps');
 const apiUtils = require('../utils/api');
+const fileUtils = require('../utils/file');
 const apiConfig = require('../configs/api');
+const serverConfig = require('../configs/server');
 const { errorResponses } = require('../constants/errors');
 
 class ListingController extends BaseController {
@@ -1230,6 +1233,60 @@ class ListingController extends BaseController {
     } catch (error) {
       return this.fail(res, error);
     }
+  }
+
+  /**
+   * Upload images to a listing item \
+   * with params `listingId`.
+   */
+  async imageUploadSchema(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.files?.error) {
+      errorResponseObj = errorResponses.validationFileError;
+      errorResponseObj.extra = req.validated.files.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const { listingId } = req.validated.params.value;
+    const fileToUpload = req.validated.files.value.image;
+
+    const { ext: fileExt } = fileUtils.explodeFileName(fileToUpload.name);
+
+    // Override name with a unique one.
+    fileToUpload.name = fileUtils.generateFileName(fileExt, [listingId]);
+
+    let uploadedFile;
+
+    try {
+      const b2 = new B2Helper();
+
+      await b2.authorize();
+
+      let bucket = await b2.getBucket(serverConfig.b2BucketName);
+      bucket = await b2.getUploadUrl(bucket.bucketId);
+
+      // Override name again with the upload path.
+      fileToUpload.name = `static/uploads/${fileToUpload.name}`;
+
+      uploadedFile = await b2.uploadFile(
+        bucket.uploadUrl,
+        bucket.authorizationToken,
+        fileToUpload
+      );
+    } catch (error) {
+      return this.fail(res, new Error('B2 upload error!'));
+    }
+
+    return this.ok(res, uploadedFile);
   }
 }
 

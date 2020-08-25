@@ -144,4 +144,17 @@ module.exports = {
       offset: Joi.number().positive().allow(0),
     }),
   },
+  imageUploadSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+    FILES: Joi.object({
+      image: Joi.object({
+        size: Joi.number()
+          .positive()
+          .max(1 * 1024 * 1024),
+        type: Joi.string().valid('image/jpeg', 'image/png'),
+      }).required(),
+    }),
+  },
 };

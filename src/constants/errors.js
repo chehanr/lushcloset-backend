@@ -31,6 +31,12 @@ const errorResponses = {
     message: 'Invalid parameter provided in the request body',
     extra: null,
   },
+  validationFileError: {
+    type: errorTypes.invalidRequestError,
+    code: 'fileError',
+    message: 'Invalid parameter provided in the request body',
+    extra: null,
+  },
   userAlreadyExistsError: {
     type: errorTypes.validationError,
     code: 'userAlreadyExists',

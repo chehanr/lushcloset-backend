@@ -28,14 +28,14 @@ module.exports = (sequelize, DataTypes) => {
       });
       this.hasMany(models.ListingEnquiry, {
         as: 'listingEnquiries',
-        foreignKey: 'listingId',
+        foreignKey: 'userId',
         hooks: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
       this.hasMany(models.ListingPurchase, {
         as: 'listingPurchases',
-        foreignKey: 'listingId',
+        foreignKey: 'userId',
         hooks: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',

@@ -1,6 +1,7 @@
 const BaseController = require('./base');
 const B2Helper = require('../helpers/b2');
 const models = require('../models');
+const apiConfig = require('../configs/api');
 const serverConfig = require('../configs/server');
 const fileUtils = require('../utils/file');
 const { errorResponses } = require('../constants/errors');
@@ -277,6 +278,165 @@ class FileController extends BaseController {
         updatedAt: fileLink.updatedAt,
       });
     });
+
+    return this.ok(res, responseObj);
+  }
+
+  /**
+   * Get all files of the authed user.
+   */
+  async getFiles(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.query?.error) {
+      errorResponseObj = errorResponses.validationQueryError;
+      errorResponseObj.extra = req.validated.query.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const orderSqlQuery = [];
+
+    if (typeof req.validated.query.value.orderBy !== 'undefined') {
+      let queries = [];
+
+      if (Array.isArray(req.validated.query.value.orderBy)) {
+        queries = [...req.validated.query.value.orderBy];
+      } else {
+        queries = [req.validated.query.value.orderBy];
+      }
+
+      queries.forEach((queryVal) => {
+        switch (queryVal) {
+          case 'createdAt':
+            orderSqlQuery.push(['createdAt', 'ASC']);
+            break;
+          case '-createdAt':
+            orderSqlQuery.push(['createdAt', 'DESC']);
+            break;
+          case 'updatedAt':
+            orderSqlQuery.push(['updatedAt', 'ASC']);
+            break;
+          case '-updatedAt':
+            orderSqlQuery.push(['updatedAt', 'DESC']);
+            break;
+          default:
+            break;
+        }
+      });
+    } else {
+      // Order by `createdAt` by default.
+      orderSqlQuery.push(['createdAt', 'DESC']);
+    }
+
+    const whereSqlQuery = {};
+
+    if (typeof req.validated.query.value.filterBy !== 'undefined') {
+      let queries = [];
+
+      if (Array.isArray(req.validated.query.value.filterBy)) {
+        queries = [...req.validated.query.value.filterBy];
+      } else {
+        queries = [req.validated.query.value.filterBy];
+      }
+
+      queries.forEach((queryVal) => {
+        switch (queryVal) {
+          case 'isListingImage':
+            whereSqlQuery.purpose = 'listing_image';
+            break;
+          case 'isUserAvatar':
+            whereSqlQuery.purpose = 'user_avatar';
+            break;
+          default:
+            break;
+        }
+      });
+    }
+
+    const paginationSqlQuery = {
+      limit: apiConfig.defaultPaginationLimit,
+      offset: 0,
+    };
+
+    if (typeof req.validated.query.value.limit !== 'undefined') {
+      if (req.validated.query.value.limit <= apiConfig.maxPaginationLimit)
+        paginationSqlQuery.limit = req.validated.query.value.limit;
+    }
+
+    if (typeof req.validated.query.value.offset !== 'undefined') {
+      paginationSqlQuery.offset = req.validated.query.value.offset;
+    }
+
+    let fileObjs;
+
+    try {
+      fileObjs = await models.File.findAndCountAll({
+        where: {
+          userId: req.user.id,
+          ...whereSqlQuery,
+        },
+        order: [...orderSqlQuery],
+        ...paginationSqlQuery,
+        include: [
+          {
+            model: models.User,
+            as: 'user',
+            attributes: ['id', 'name'],
+          },
+          {
+            model: models.FileLink,
+            as: 'fileLinks',
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    const responseObj = {
+      count: 0,
+      ...paginationSqlQuery,
+      files: [],
+    };
+
+    if (fileObjs) {
+      responseObj.count = fileObjs.count;
+
+      fileObjs.rows.forEach((fileObj) => {
+        const file = {
+          id: fileObj.id,
+          purpose: fileObj.purpose,
+          uploadedBy: {
+            id: fileObj.user.id,
+            name: fileObj.user.name,
+          },
+          links: [],
+          createdAt: fileObj.createdAt,
+          updatedAt: fileObj.updatedAt,
+        };
+
+        fileObj.fileLinks.forEach((fileLinkObj) => {
+          file.links.push({
+            id: fileLinkObj.id,
+            storageProvider: fileLinkObj.storageProvider,
+            storageBucketName: fileLinkObj.storageBucketName,
+            storageFileId: fileLinkObj.storageFileId,
+            fileName: fileLinkObj.fileName,
+            fileSize: fileLinkObj.fileSize,
+            fileContentType: fileLinkObj.fileContentType,
+            url: fileUtils.getFileLinkUrl(fileLinkObj),
+            metadata: fileLinkObj.metadata,
+            uploadedAt: fileLinkObj.uploadedAt,
+            expiresAt: fileLinkObj.expiresAt,
+            createdAt: fileLinkObj.createdAt,
+            updatedAt: fileLinkObj.updatedAt,
+          });
+        });
+
+        responseObj.files.push(file);
+      });
+    }
 
     return this.ok(res, responseObj);
   }

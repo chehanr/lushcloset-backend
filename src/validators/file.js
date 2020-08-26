@@ -21,4 +21,21 @@ module.exports = {
       fileId: Joi.string().uuid().required(),
     }),
   },
+
+  getFilesSchema: {
+    QUERY: Joi.object({
+      orderBy: Joi.alternatives().try(
+        Joi.array().items(
+          Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+        ),
+        Joi.valid('createdAt', '-createdAt', 'updatedAt', '-updatedAt')
+      ),
+      filterBy: Joi.alternatives().try(
+        Joi.array().items(Joi.valid('isListingImage', 'isUserAvatar')),
+        Joi.valid('isListingImage', 'isUserAvatar')
+      ),
+      limit: Joi.number().positive().allow(0),
+      offset: Joi.number().positive().allow(0),
+    }),
+  },
 };

@@ -231,19 +231,25 @@ class FileController extends BaseController {
 
     const params = req.validated.params.value;
 
-    const fileObj = await models.File.findByPk(params.fileId, {
-      include: [
-        {
-          model: models.User,
-          as: 'user',
-          attributes: ['id', 'name'],
-        },
-        {
-          model: models.FileLink,
-          as: 'fileLinks',
-        },
-      ],
-    });
+    let fileObj;
+
+    try {
+      fileObj = await models.File.findByPk(params.fileId, {
+        include: [
+          {
+            model: models.User,
+            as: 'user',
+            attributes: ['id', 'name'],
+          },
+          {
+            model: models.FileLink,
+            as: 'fileLinks',
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
 
     if (!fileObj) {
       return this.notFound(res);

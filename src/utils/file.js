@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 
+const serverConfig = require('../configs/server');
+
 module.exports = {
   /**
    * Returns a file's name and extention.
@@ -29,5 +31,27 @@ module.exports = {
     )}${concatChar}${uuid}.${fileExtension}`;
 
     return name;
+  },
+
+  /**
+   * Returns a full url for a file link object.
+   * @param  {Object} fileLinkObj   FileLinkObject
+   * @return {String}
+   */
+  getFileLinkUrl(fileLinkObj) {
+    let url = '';
+
+    switch (fileLinkObj.storageProvider) {
+      case 'b2':
+        url = url.concat(
+          `https://${fileLinkObj.storageBucketName}.${serverConfig.b2BucketEndpoint}/${fileLinkObj.fileName}`
+        );
+        break;
+
+      default:
+        break;
+    }
+
+    return url;
   },
 };

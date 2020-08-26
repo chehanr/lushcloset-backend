@@ -15,4 +15,10 @@ module.exports = {
       purpose: Joi.string().valid('listing_image', 'user_avatar').required(),
     }),
   },
+
+  getFileSchema: {
+    PARAMS: Joi.object({
+      fileId: Joi.string().uuid().required(),
+    }),
+  },
 };

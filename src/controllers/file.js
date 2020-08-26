@@ -213,6 +213,73 @@ class FileController extends BaseController {
 
     return this.created(res, responseObj);
   }
+
+  /**
+   * Get a file. \
+   * With `fileId`.
+   */
+  async getFile(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const params = req.validated.params.value;
+
+    const fileObj = await models.File.findByPk(params.fileId, {
+      include: [
+        {
+          model: models.User,
+          as: 'user',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: models.FileLink,
+          as: 'fileLinks',
+        },
+      ],
+    });
+
+    if (!fileObj) {
+      return this.notFound(res);
+    }
+
+    const responseObj = {
+      id: fileObj.id,
+      purpose: fileObj.purpose,
+      uploadedBy: {
+        id: fileObj.user.id,
+        name: fileObj.user.name,
+      },
+      links: [],
+      createdAt: fileObj.createdAt,
+      updatedAt: fileObj.updatedAt,
+    };
+
+    fileObj.fileLinks.forEach((fileLink) => {
+      responseObj.links.push({
+        id: fileLink.id,
+        storageProvider: fileLink.storageProvider,
+        storageBucketName: fileLink.storageBucketName,
+        storageFileId: fileLink.storageFileId,
+        fileName: fileLink.fileName,
+        fileSize: fileLink.fileSize,
+        fileContentType: fileLink.fileContentType,
+        url: fileUtils.getFileLinkUrl(fileLink),
+        metadata: fileLink.metadata,
+        uploadedAt: fileLink.uploadedAt,
+        expiresAt: fileLink.expiresAt,
+        createdAt: fileLink.createdAt,
+        updatedAt: fileLink.updatedAt,
+      });
+    });
+
+    return this.ok(res, responseObj);
+  }
 }
 
 module.exports = new FileController();

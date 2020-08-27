@@ -1236,10 +1236,10 @@ class ListingController extends BaseController {
   }
 
   /**
-   * Upload images to a listing item \
+   * Get all images attached to the listing \
    * with params `listingId`.
    */
-  async imageUploadSchema(req, res) {
+  async getImages(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -1249,44 +1249,419 @@ class ListingController extends BaseController {
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
-    if (req.validated.files?.error) {
-      errorResponseObj = errorResponses.validationFileError;
-      errorResponseObj.extra = req.validated.files.error;
+    const { listingId } = req.validated.params.value;
+
+    let listingImageObjs = [];
+
+    try {
+      listingImageObjs = await models.ListingImage.findAndCountAll({
+        where: {
+          listingId,
+        },
+        orderSqlQuery: ['orderIndex', 'ASC'],
+        include: [
+          {
+            model: models.File,
+            as: 'file',
+            where: {
+              purpose: 'listing_image',
+            },
+            include: [
+              {
+                model: models.FileLink,
+                as: 'fileLinks',
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    const responseObj = {
+      count: listingImageObjs.count,
+      images: [],
+    };
+
+    listingImageObjs.rows.forEach((listingImageObj) => {
+      const imageItem = {
+        id: listingImageObj.id,
+        orderIndex: listingImageObj.orderIndex || 0,
+        file: {
+          id: listingImageObj.file.id,
+          purpose: listingImageObj.file.purpose,
+          links: [],
+        },
+        createdAt: listingImageObj.createdAt,
+        updatedAt: listingImageObj.updatedAt,
+      };
+
+      if (listingImageObj.file.fileLinks.length > 0) {
+        listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+          imageItem.file.links.push({
+            id: fileLinkObj.id,
+            fileName: fileLinkObj.fileName,
+            fileSize: fileLinkObj.fileSize,
+            fileContentType: fileLinkObj.fileContentType,
+            url: fileUtils.getFileLinkUrl(fileLinkObj),
+            metadata: fileLinkObj.metadata || {},
+            uploadedAt: fileLinkObj.uploadedAt,
+            expiresAt: fileLinkObj.expiresAt,
+          });
+        });
+      }
+
+      responseObj.images.push(imageItem);
+    });
+
+    return this.ok(res, responseObj);
+  }
+
+  /**
+   * Create an image (file) to a listing\
+   * with params `listingId`.
+   */
+  async createImage(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.body?.error) {
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
 
       return this.unprocessableEntity(res, errorResponseObj);
     }
 
     const { listingId } = req.validated.params.value;
-    const fileToUpload = req.validated.files.value.image;
+    const { fileId, orderIndex } = req.validated.body.value;
 
-    const { ext: fileExt } = fileUtils.explodeFileName(fileToUpload.name);
-
-    // Override name with a unique one.
-    fileToUpload.name = fileUtils.generateFileName(fileExt, [listingId]);
-
-    let uploadedFile;
+    let listingObj;
+    let fileObj;
 
     try {
-      const b2 = new B2Helper();
-
-      await b2.authorize();
-
-      let bucket = await b2.getBucket(serverConfig.b2BucketName);
-      bucket = await b2.getUploadUrl(bucket.bucketId);
-
-      // Override name again with the upload path.
-      fileToUpload.name = `static/uploads/${fileToUpload.name}`;
-
-      uploadedFile = await b2.uploadFile(
-        bucket.uploadUrl,
-        bucket.authorizationToken,
-        fileToUpload
-      );
+      listingObj = await models.Listing.findByPk(listingId, {
+        include: [
+          {
+            model: models.ListingImage,
+            as: 'listingImages',
+          },
+        ],
+      });
+      fileObj = await models.File.findByPk(fileId);
     } catch (error) {
-      return this.fail(res, new Error('B2 upload error!'));
+      return this.fail(res, error);
     }
 
-    return this.ok(res, uploadedFile);
+    if (!listingObj) {
+      errorResponseObj = errorResponses.listingNotFoundError;
+      return this.notFound(res, errorResponseObj);
+    }
+
+    if (!fileObj) {
+      errorResponseObj = errorResponses.fileNotFoundError;
+      return this.notFound(res, errorResponseObj);
+    }
+
+    if (listingObj.userId !== req.user.id || fileObj.userId !== req.user.id) {
+      return this.unauthorized(res);
+    }
+
+    if (fileObj.purpose !== 'listing_image') {
+      errorResponseObj = errorResponses.invalidFilePurposeError;
+      return this.badRequest(res, errorResponseObj);
+    }
+
+    let listingImageObj;
+
+    try {
+      await models.sequelize.transaction(async (transaction) => {
+        listingImageObj = await models.ListingImage.create(
+          {
+            listingId,
+            fileId,
+            orderIndex,
+          },
+          {
+            transaction,
+          }
+        );
+
+        listingImageObj.file = await listingImageObj.getFile({
+          include: [
+            {
+              model: models.FileLink,
+              as: 'fileLinks',
+            },
+          ],
+          transaction,
+        });
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    const responseObj = {
+      id: listingImageObj.id,
+      orderIndex: listingImageObj.orderIndex || 0,
+      file: {
+        id: listingImageObj.file.id,
+        purpose: listingImageObj.file.purpose,
+        links: [],
+      },
+      createdAt: listingImageObj.createdAt,
+      updatedAt: listingImageObj.updatedAt,
+    };
+
+    if (listingImageObj.file.fileLinks.length > 0) {
+      listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+        responseObj.file.links.push({
+          id: fileLinkObj.id,
+          fileName: fileLinkObj.fileName,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+          uploadedAt: fileLinkObj.uploadedAt,
+          expiresAt: fileLinkObj.expiresAt,
+        });
+      });
+    }
+
+    return this.ok(res, responseObj);
+  }
+
+  /**
+   * Get an image (file) of a listing \
+   * with params `listingId`, `listingImageId`.
+   */
+  async getImage(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const { listingId, listingImageId } = req.validated.params.value;
+
+    let listingImageObj;
+
+    try {
+      listingImageObj = await models.ListingImage.findByPk(listingImageId, {
+        include: [
+          {
+            model: models.Listing,
+            as: 'listing',
+            where: {
+              id: listingId,
+            },
+          },
+          {
+            model: models.File,
+            as: 'file',
+            include: [
+              {
+                model: models.FileLink,
+                as: 'fileLinks',
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (!listingImageObj) {
+      return this.notFound(res);
+    }
+
+    const responseObj = {
+      id: listingImageObj.id,
+      orderIndex: listingImageObj.orderIndex || 0,
+      file: {
+        id: listingImageObj.file.id,
+        purpose: listingImageObj.file.purpose,
+        links: [],
+      },
+      createdAt: listingImageObj.createdAt,
+      updatedAt: listingImageObj.updatedAt,
+    };
+
+    if (listingImageObj.file.fileLinks.length > 0) {
+      listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+        responseObj.file.links.push({
+          id: fileLinkObj.id,
+          fileName: fileLinkObj.fileName,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+          uploadedAt: fileLinkObj.uploadedAt,
+          expiresAt: fileLinkObj.expiresAt,
+        });
+      });
+    }
+
+    return this.ok(res, responseObj);
+  }
+
+  /**
+   * Update an image (file) of a listing \
+   * with params `listingId`, `listingImageId`.
+   */
+  async updateImage(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    if (req.validated.body?.error) {
+      errorResponseObj = errorResponses.validationBodyError;
+      errorResponseObj.extra = req.validated.body.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const { listingId, listingImageId } = req.validated.params.value;
+    const { orderIndex } = req.validated.body.value;
+
+    let listingImageObj;
+
+    try {
+      listingImageObj = await models.ListingImage.findByPk(listingImageId, {
+        include: [
+          {
+            model: models.Listing,
+            as: 'listing',
+            where: {
+              id: listingId,
+            },
+          },
+          {
+            model: models.File,
+            as: 'file',
+            include: [
+              {
+                model: models.FileLink,
+                as: 'fileLinks',
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (!listingImageObj) {
+      return this.notFound(res);
+    }
+
+    if (listingImageObj.listing.userId !== req.user.id) {
+      return this.unauthorized(res);
+    }
+
+    try {
+      listingImageObj.orderIndex = orderIndex;
+
+      await listingImageObj.save();
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    const responseObj = {
+      id: listingImageObj.id,
+      orderIndex: listingImageObj.orderIndex || 0,
+      file: {
+        id: listingImageObj.file.id,
+        purpose: listingImageObj.file.purpose,
+        links: [],
+      },
+      createdAt: listingImageObj.createdAt,
+      updatedAt: listingImageObj.updatedAt,
+    };
+
+    if (listingImageObj.file.fileLinks.length > 0) {
+      listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+        responseObj.file.links.push({
+          id: fileLinkObj.id,
+          fileName: fileLinkObj.fileName,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+          uploadedAt: fileLinkObj.uploadedAt,
+          expiresAt: fileLinkObj.expiresAt,
+        });
+      });
+    }
+
+    return this.ok(res, responseObj);
+  }
+
+  /**
+   * Delete an image (file) from a listing \
+   * with params `listingId`, `listingImageId`.
+   */
+  async deleteImage(req, res) {
+    let errorResponseObj;
+
+    if (req.validated.params?.error) {
+      errorResponseObj = errorResponses.validationParamError;
+      errorResponseObj.extra = req.validated.params.error;
+
+      return this.unprocessableEntity(res, errorResponseObj);
+    }
+
+    const { listingId, listingImageId } = req.validated.params.value;
+
+    let listingImageObj;
+
+    try {
+      listingImageObj = await models.ListingImage.findByPk(listingImageId, {
+        include: [
+          {
+            model: models.Listing,
+            as: 'listing',
+            where: {
+              id: listingId,
+            },
+          },
+        ],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (!listingImageObj) {
+      return this.notFound(res);
+    }
+
+    if (listingImageObj.listing.userId !== req.user.id) {
+      return this.unauthorized(res);
+    }
+
+    try {
+      await listingImageObj.destroy();
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    return this.noContent(res);
   }
 }
 

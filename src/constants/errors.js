@@ -10,6 +10,7 @@ const errorTypes = {
   listingError: 'listingError',
   rentalError: 'rentalError',
   purchaseError: 'purchaseError',
+  fileError: 'fileError',
 };
 
 const errorResponses = {
@@ -31,6 +32,12 @@ const errorResponses = {
     message: 'Invalid parameter provided in the request body',
     extra: null,
   },
+  validationFileError: {
+    type: errorTypes.invalidRequestError,
+    code: 'fileError',
+    message: 'Invalid parameter provided in the request body',
+    extra: null,
+  },
   userAlreadyExistsError: {
     type: errorTypes.validationError,
     code: 'userAlreadyExists',
@@ -41,6 +48,18 @@ const errorResponses = {
     type: errorTypes.validationError,
     code: 'userNotFound',
     message: 'A user with the provided credentials does not exist',
+    extra: null,
+  },
+  listingNotFoundError: {
+    type: errorTypes.validationError,
+    code: 'listingNotFound',
+    message: 'A listing with the provided data does not exist',
+    extra: null,
+  },
+  fileNotFoundError: {
+    type: errorTypes.validationError,
+    code: 'fileNotFound',
+    message: 'A file with the provided data does not exist',
     extra: null,
   },
   userNotAuthenticatedError: {
@@ -113,6 +132,12 @@ const errorResponses = {
     type: errorTypes.purchaseError,
     code: 'invalidPurchaseVerificationCode',
     message: 'The listing purchase verification code is invalid',
+    extra: null,
+  },
+  invalidFilePurposeError: {
+    type: errorTypes.fileError,
+    code: 'invalidFilePurpose',
+    message: 'This file serves a different purpose',
     extra: null,
   },
 };

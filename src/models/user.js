@@ -28,14 +28,21 @@ module.exports = (sequelize, DataTypes) => {
       });
       this.hasMany(models.ListingEnquiry, {
         as: 'listingEnquiries',
-        foreignKey: 'listingId',
+        foreignKey: 'userId',
         hooks: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
       this.hasMany(models.ListingPurchase, {
         as: 'listingPurchases',
-        foreignKey: 'listingId',
+        foreignKey: 'userId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
+      this.hasMany(models.File, {
+        as: 'files',
+        foreignKey: 'userId',
         hooks: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
@@ -115,6 +122,12 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.File.destroy({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
@@ -132,6 +145,12 @@ module.exports = (sequelize, DataTypes) => {
           });
 
           await sequelize.models.ListingPurchase.restore({
+            where: { userId: instance.where?.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.File.restore({
             where: { userId: instance.where?.id },
           }).catch((error) => {
             logger.error(error);

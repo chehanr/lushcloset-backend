@@ -144,4 +144,44 @@ module.exports = {
       offset: Joi.number().positive().allow(0),
     }),
   },
+
+  getImagesSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+  },
+
+  getImageSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+      listingImageId: Joi.string().uuid().required(),
+    }),
+  },
+
+  createImageSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+    }),
+    BODY: Joi.object({
+      fileId: Joi.string().uuid().required(),
+      orderIndex: Joi.number().positive(),
+    }),
+  },
+
+  updateImageSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+      listingImageId: Joi.string().uuid().required(),
+    }),
+    BODY: Joi.object({
+      orderIndex: Joi.number().positive(),
+    }),
+  },
+
+  deleteImageSchema: {
+    PARAMS: Joi.object({
+      listingId: Joi.string().uuid().required(),
+      listingImageId: Joi.string().uuid().required(),
+    }),
+  },
 };

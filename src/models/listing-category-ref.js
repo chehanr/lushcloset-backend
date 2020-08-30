@@ -3,9 +3,12 @@ const { Model, UUIDV4 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ListingCategoryRef extends Model {
     static associate(models) {
-      this.belongsTo(models.ListingCategory, {
-        as: 'listingCategory',
-        foreignKey: 'listingCategoryId',
+      this.hasMany(models.ListingCategory, {
+        as: 'listingCategories',
+        foreignKey: 'listingCategoryRefId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
       });
     }
   }

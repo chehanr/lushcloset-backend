@@ -47,7 +47,10 @@ class ListingController extends BaseController {
     }
 
     if (geocodingData.length === 0) {
-      return this.badRequest(res, errorResponses.unprocessableLocationAddress);
+      return this.badRequest(
+        res,
+        errorResponses.unprocessableLocationAddressError
+      );
     }
 
     const fileIds = [];
@@ -78,6 +81,11 @@ class ListingController extends BaseController {
       );
     } catch (error) {
       return this.fail(res, error);
+    }
+
+    if (fileObjs.length === 0) {
+      errorResponseData = errorResponses.noImagesForListingError;
+      return this.badRequest(res, errorResponseData);
     }
 
     if (!listingCategoryRefObj) {

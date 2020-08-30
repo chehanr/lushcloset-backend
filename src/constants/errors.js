@@ -62,6 +62,13 @@ const errorResponses = {
     message: 'A file with the provided data does not exist',
     extra: null,
   },
+  listingCategoryRefNotFoundError: {
+    type: errorTypes.validationError,
+    code: ' listingCategoryRefNotFound',
+    message:
+      'A listing category reference with the provided data does not exist',
+    extra: null,
+  },
   userNotAuthenticatedError: {
     type: errorTypes.authenticationError,
     code: 'userNotAuthenticated',
@@ -86,10 +93,16 @@ const errorResponses = {
     message: 'Previous listing enquiry is pending review',
     extra: null,
   },
-  unprocessableLocationAddress: {
+  unprocessableLocationAddressError: {
     type: errorTypes.listingError,
     code: 'unprocessableLocationAddress',
     message: 'The location address cannot be processed',
+    extra: null,
+  },
+  noImagesForListingError: {
+    type: errorTypes.listingError,
+    code: 'noImagesForListing',
+    message: 'The listing does not have any images',
     extra: null,
   },
   lockedListingError: {

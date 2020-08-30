@@ -10,6 +10,7 @@ const rentalsRouter = require('./v1_0/rentals');
 const purchaseRouter = require('./v1_0/purchases');
 const chatsRouter = require('./v1_0/chats');
 const filesRouter = require('./v1_0/files');
+const refsRouter = require('./v1_0/refs');
 
 router.use('/v1_0/auth', authRouter);
 router.use('/v1_0/users', usersRouter);
@@ -19,5 +20,6 @@ router.use('/v1_0/rentals', rentalsRouter);
 router.use('/v1_0/purchases', purchaseRouter);
 router.use('/v1_0/chats', chatsRouter);
 router.use('/v1_0/files', filesRouter);
+router.use('/v1_0/refs', refsRouter);
 
 module.exports = router;

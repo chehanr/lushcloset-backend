@@ -5,5 +5,6 @@ module.exports = {
   formidable: {
     maxFieldsSize: 5 * 1024 * 1024,
     maxFileSize: 2 * 1024 * 1024,
+    multiples: true,
   },
 };

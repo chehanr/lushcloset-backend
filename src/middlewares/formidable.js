@@ -9,7 +9,7 @@ function formidableParser(opts, events) {
   return (req, res, next) => {
     const form = new formidable.IncomingForm();
 
-    Object.assign(form, opts);
+    Object.assign(form.options, opts);
 
     let manageOnError = false;
 

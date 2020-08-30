@@ -14,141 +14,296 @@ class ListingController extends BaseController {
    * Create a listing.
    */
   async createListingItem(req, res) {
-    let errorResponseObj;
+    let errorResponseData;
 
     if (req.validated.body?.error) {
-      errorResponseObj = errorResponses.validationBodyError;
-      errorResponseObj.extra = req.validated.body.error;
+      errorResponseData = errorResponses.validationBodyError;
+      errorResponseData.extra = req.validated.body.error;
 
-      return this.unprocessableEntity(res, errorResponseObj);
+      return this.unprocessableEntity(res, errorResponseData);
     }
 
-    const geocodingData = await googleMapsHelper.getGeocodingData(
-      req.validated.body.value.address
-    );
+    const {
+      title,
+      description,
+      listingType,
+      address,
+      addressNote,
+      priceValue,
+      currencyTypeIso,
+      imageFileId,
+      categoryRefId,
+      size,
+      brandName,
+      condition,
+    } = req.validated.body.value;
 
-    if (geocodingData.length === 0) {
-      return this.badRequest(res, errorResponses.unprocessableLocationAddress);
-    }
+    const geocodingData = [];
 
     try {
-      const result = await models.sequelize.transaction(async (t) => {
-        const listingObj = await models.Listing.create(
-          {
-            title: req.validated.body.value.title,
-            description: req.validated.body.value.description,
-            listingType: req.validated.body.value.listingType,
+      geocodingData.push(...(await googleMapsHelper.getGeocodingData(address)));
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (geocodingData.length === 0) {
+      return this.badRequest(
+        res,
+        errorResponses.unprocessableLocationAddressError
+      );
+    }
+
+    const fileIds = [];
+
+    if (Array.isArray(imageFileId)) {
+      fileIds.push(...imageFileId);
+    } else {
+      fileIds.push(imageFileId);
+    }
+
+    const fileObjs = [];
+    let listingCategoryRefObj;
+
+    try {
+      fileObjs.push(
+        ...(await models.File.findAll({
+          where: {
+            id: fileIds,
             userId: req.user.id,
+            purpose: 'listing_image',
+          },
+          attributes: ['id'],
+        }))
+      );
+
+      listingCategoryRefObj = await models.ListingCategoryRef.findByPk(
+        categoryRefId
+      );
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (fileObjs.length === 0) {
+      errorResponseData = errorResponses.noImagesForListingError;
+      return this.badRequest(res, errorResponseData);
+    }
+
+    if (!listingCategoryRefObj) {
+      errorResponseData = errorResponses.listingCategoryRefNotFoundError;
+      return this.notFound(res, errorResponseData);
+    }
+
+    let listingObj;
+
+    try {
+      await models.sequelize.transaction(async (transaction) => {
+        listingObj = await models.Listing.create(
+          {
+            title: title,
+            description: description,
+            listingType: listingType,
+            userId: req.user.id,
+            listingPrice: {
+              value: priceValue,
+              currencyTypeIso: currencyTypeIso,
+            },
+            listingAddress: {
+              submittedAddress: address,
+              formattedAddress: geocodingData[0].formatted_address,
+              googleGeocodingData: geocodingData[0],
+              note: addressNote,
+            },
+            listingStatus: {
+              statusType: 'available',
+            },
+            listingImages: [
+              ...fileObjs.map((fileObj, index) => ({
+                fileId: fileObj.id,
+                orderIndex: index,
+              })),
+            ],
+            listingCategory: {
+              listingCategoryRefId: listingCategoryRefObj.id,
+            },
+            listingMetadata: {
+              size: size,
+              brandName: brandName,
+              condition: condition,
+            },
           },
           {
-            transaction: t,
+            include: [
+              {
+                model: models.ListingPrice,
+                as: 'listingPrice',
+              },
+              {
+                model: models.ListingAddress,
+                as: 'listingAddress',
+              },
+              {
+                model: models.ListingStatus,
+                as: 'listingStatus',
+              },
+              {
+                model: models.ListingImage,
+                as: 'listingImages',
+              },
+              {
+                model: models.ListingCategory,
+                as: 'listingCategory',
+              },
+              {
+                model: models.ListingMetadata,
+                as: 'listingMetadata',
+              },
+            ],
+            transaction,
           }
         );
 
-        const listingPriceObj = await models.ListingPrice.create(
-          {
-            value: req.validated.body.value.priceValue,
-            currencyTypeIso: req.validated.body.value.currencyTypeIso,
-            listingId: listingObj.id,
-          },
-          {
-            transaction: t,
-          }
-        );
+        listingObj.user = await listingObj.getUser({ transaction });
 
-        const listingAddressObj = await models.ListingAddress.create(
-          {
-            note: req.validated.body.value.addressNote,
-            submittedAddress: req.validated.body.value.address,
-            formattedAddress: geocodingData[0].formatted_address,
-            googleGeocodingData: geocodingData[0],
-            listingId: listingObj.id,
-          },
-          {
-            transaction: t,
-          }
-        );
+        listingObj.listingCategory = await listingObj.getListingCategory({
+          include: [
+            {
+              model: models.ListingCategoryRef,
+              as: 'listingCategoryRef',
+            },
+          ],
+          transaction,
+        });
 
-        const listingStatusObj = await models.ListingStatus.create(
-          {
-            statusType: 'available',
-            listingId: listingObj.id,
-          },
-          {
-            transaction: t,
-          }
-        );
-
-        return {
-          listing: listingObj,
-          listingPrice: listingPriceObj,
-          listingAddress: listingAddressObj,
-          listingStatus: listingStatusObj,
-        };
+        listingObj.listingImages = await listingObj.getListingImages({
+          order: [
+            ['orderIndex', 'ASC'],
+            ['createdAt', 'DESC'],
+          ],
+          include: [
+            {
+              model: models.File,
+              as: 'file',
+              where: {
+                purpose: 'listing_image',
+              },
+              include: [
+                {
+                  model: models.FileLink,
+                  as: 'fileLinks',
+                },
+              ],
+            },
+          ],
+          transaction,
+        });
       });
+    } catch (error) {
+      return this.fail(res, error);
+    }
 
-      result.user = await result.listing.getUser();
+    let addressComponents;
+    let approxAddressComponents;
+    let shortDescription;
+    let formattedApproxAddress;
 
-      const addressComponentsObj = googleMapsUtils.getAddressComponents(
+    try {
+      addressComponents = googleMapsUtils.getAddressComponents(
         geocodingData[0]
       );
 
-      const approxAddressComponentsObj = googleMapsUtils.getAddressComponents(
+      approxAddressComponents = googleMapsUtils.getAddressComponents(
         geocodingData[0],
         true
       );
 
-      const shortDescription = apiUtils.truncateString(
-        apiUtils.cleanString(result.listing.description),
+      shortDescription = apiUtils.truncateString(
+        apiUtils.cleanString(listingObj.description),
         256
       );
 
-      const responsObj = {
-        id: result.listing.id,
-        title: result.listing.title,
-        shortDescription: shortDescription,
-        description: result.listing.description,
-        listingType: result.listing.listingType,
-        price: {
-          value: result.listingPrice.value,
-          currencyTypeIso: result.listingPrice.currencyTypeIso,
-        },
-        user: {
-          id: result.user.id,
-          name: result.user.name,
-        },
-        approximateLocation: {
-          formattedAddress: googleMapsUtils.getFormattedAddress(
-            approxAddressComponentsObj
-          ),
-          addressComponents: approxAddressComponentsObj,
-        },
-        preciseLocation: {
-          submittedAddress: result.listingAddress.submittedAddress,
-          formattedAddress: result.listingAddress.formattedAddress,
-          addressComponents: addressComponentsObj,
-          geographic: {
-            lat:
-              result.listingAddress.googleGeocodingData?.geometry?.location
-                .lat || null,
-            lng:
-              result.listingAddress.googleGeocodingData?.geometry?.location
-                .lng || null,
-          },
-          googlePlaceId:
-            // eslint-disable-next-line camelcase
-            result.listingAddress.googleGeocodingData?.place_id || null,
-          note: result.listingAddress.note || null,
-        },
-        status: result.listingStatus.statusType,
-        createdAt: result.listing.createdAt,
-        updatedAt: result.listing.updatedAt,
-      };
-
-      return this.created(res, responsObj);
+      formattedApproxAddress = googleMapsUtils.getFormattedAddress(
+        approxAddressComponents
+      );
     } catch (error) {
       return this.fail(res, error);
     }
+
+    const responseData = {
+      id: listingObj.id,
+      title: listingObj.title,
+      shortDescription: shortDescription,
+      description: listingObj.description,
+      listingType: listingObj.listingType,
+      status: listingObj.listingStatus.statusType,
+      price: {
+        value: listingObj.listingPrice.value,
+        currencyTypeIso: listingObj.listingPrice.currencyTypeIso,
+      },
+      createdBy: {
+        id: listingObj.user.id,
+        name: listingObj.user.name,
+      },
+      approximateLocation: {
+        formattedAddress: formattedApproxAddress,
+        addressComponents: approxAddressComponents,
+      },
+      preciseLocation: {
+        submittedAddress: listingObj.listingAddress.submittedAddress,
+        formattedAddress: listingObj.listingAddress.formattedAddress,
+        addressComponents: addressComponents,
+        geographic: {
+          lat:
+            listingObj.listingAddress.googleGeocodingData?.geometry?.location
+              .lat || null,
+          lng:
+            listingObj.listingAddress.googleGeocodingData?.geometry?.location
+              .lng || null,
+        },
+        googlePlaceId:
+          // eslint-disable-next-line camelcase
+          listingObj.listingAddress.googleGeocodingData?.place_id || null,
+        note: listingObj.listingAddress.note || null,
+      },
+      category: {
+        ref: {
+          id: listingObj.listingCategory.listingCategoryRef.id,
+          name: listingObj.listingCategory.listingCategoryRef.name,
+        },
+      },
+      metaData: {
+        size: listingObj.listingMetadata.size,
+        brandName: listingObj.listingMetadata.brandName,
+        condition: listingObj.listingMetadata.condition,
+      },
+      images: [],
+      createdAt: listingObj.createdAt,
+      updatedAt: listingObj.updatedAt,
+    };
+
+    listingObj.listingImages.forEach((listingImageObj) => {
+      const image = {
+        id: listingImageObj.id,
+        orderIndex: listingImageObj.orderIndex || 0,
+        file: {
+          id: listingImageObj.file.id,
+          links: [],
+        },
+      };
+
+      listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+        image.file.links.push({
+          id: fileLinkObj.id,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+        });
+      });
+
+      responseData.images.push(image);
+    });
+
+    return this.created(res, responseData);
   }
 
   /**

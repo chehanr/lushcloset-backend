@@ -13,6 +13,18 @@ module.exports = {
       addressNote: Joi.string().max(256),
       priceValue: Joi.number().positive().required(),
       currencyTypeIso: Joi.string().length(3).uppercase().required(), // Limit to AUD?
+      imageFileId: Joi.alternatives()
+        .try(Joi.array().items(Joi.string().uuid()), Joi.string().uuid())
+        .required(),
+      categoryRefId: Joi.string().uuid().required(),
+      size: Joi.string().max(64),
+      brandName: Joi.string().max(128),
+      condition: Joi.string().valid(
+        'new',
+        'used_like_new',
+        'used_good',
+        'used_fair'
+      ),
     }),
   },
 

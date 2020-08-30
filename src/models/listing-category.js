@@ -7,12 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         as: 'listing',
         foreignKey: 'listingId',
       });
-      this.hasOne(models.ListingCategoryRef, {
-        as: 'listingCategory',
-        foreignKey: 'listingCategoryId',
-        hooks: false,
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
+      this.belongsTo(models.ListingCategoryRef, {
+        as: 'listingCategoryRef',
+        foreignKey: 'listingCategoryRefId',
       });
     }
   }

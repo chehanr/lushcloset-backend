@@ -62,6 +62,13 @@ const errorResponses = {
     message: 'A file with the provided data does not exist',
     extra: null,
   },
+  listingCategoryRefNotFoundError: {
+    type: errorTypes.validationError,
+    code: ' listingCategoryRefNotFound',
+    message:
+      'A listing category reference with the provided data does not exist',
+    extra: null,
+  },
   userNotAuthenticatedError: {
     type: errorTypes.authenticationError,
     code: 'userNotAuthenticated',

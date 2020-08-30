@@ -23,6 +23,20 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasOne(models.ListingCategory, {
+        as: 'listingCategory',
+        foreignKey: 'listingId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
+      this.hasOne(models.ListingMetadata, {
+        as: 'listingMetadata',
+        foreignKey: 'listingId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
       this.hasOne(models.ListingStatus, {
         as: 'listingStatus',
         foreignKey: 'listingId',
@@ -100,6 +114,18 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.ListingCategory.destroy({
+            where: { listingId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.ListingMetadata.destroy({
+            where: { listingId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
@@ -117,6 +143,18 @@ module.exports = (sequelize, DataTypes) => {
           });
 
           await sequelize.models.ListingStatus.restore({
+            where: { listingId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.ListingCategory.restore({
+            where: { listingId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.ListingMetadata.restore({
             where: { listingId: instance.id },
           }).catch((error) => {
             logger.error(error);

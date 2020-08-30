@@ -3,20 +3,13 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      await queryInterface.createTable('listing_category_refs', {
+      await queryInterface.createTable('listing_categories', {
         id: {
           allowNull: false,
           defaultValue: Sequelize.UUIDV4,
           primaryKey: true,
           type: Sequelize.UUID,
           unique: true,
-        },
-        name: {
-          allowNull: false,
-          type: Sequelize.STRING(128),
-        },
-        attributes: {
-          type: Sequelize.JSONB,
         },
         created_at: {
           allowNull: false,
@@ -29,11 +22,21 @@ module.exports = {
         deleted_at: {
           type: Sequelize.DATE,
         },
-        listing_category_id: {
+        listing_id: {
           allowNull: false,
           type: Sequelize.UUID,
           references: {
-            model: 'listing_categories',
+            model: 'listings',
+            key: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE',
+        },
+        listing_category_ref_id: {
+          allowNull: false,
+          type: Sequelize.UUID,
+          references: {
+            model: 'listing_category_refs',
             key: 'id',
           },
           onUpdate: 'CASCADE',
@@ -53,7 +56,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
 
     try {
-      await queryInterface.dropTable('listing_category_refs');
+      await queryInterface.dropTable('listing_categories');
 
       return transaction.commit();
     } catch (error) {

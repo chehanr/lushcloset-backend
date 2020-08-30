@@ -14,7 +14,7 @@ module.exports = {
         size: {
           type: Sequelize.STRING(64),
         },
-        brandName: {
+        brand_name: {
           type: Sequelize.STRING(128),
         },
         condition: {

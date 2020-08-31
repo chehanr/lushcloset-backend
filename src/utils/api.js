@@ -27,26 +27,33 @@ module.exports = {
 
   /**
    * Returns a string truncated and ellipsised (...).
-   * @param  {String} stringToTruncate   String to truncate.
-   * @param  {Number} truncatedLength    String length to truncate to.
-   * @param  {String} [ellipsisChar='.'] Char to ellipsise as.
-   * @param  {Number} [ellipsisCount=3]  Number of ellipsise chars.
-   * @return {String}                    Truncated string.
+   * @param  {String} inputText             String to truncate
+   * @param  {Number} width                 String length to truncate to
+   * @param  {String} [char='.']            Char to ellipsise as
+   * @param  {Number} [charCount=3]         Number of ellipsise chars
+   * @return {String}                       Truncated string
    */
-  truncateString(
-    stringToTruncate,
-    truncatedLength,
-    ellipsisChar = '.',
-    ellipsisCount = 3
-  ) {
-    if (!stringToTruncate) return '';
+  truncateString(inputText, width, char = '.', charCount = 3) {
+    let result = '';
 
-    if (stringToTruncate.length > truncatedLength + ellipsisCount) {
-      return `${stringToTruncate
-        .slice(0, truncatedLength - ellipsisCount)
-        .trim()}${ellipsisChar.repeat(ellipsisCount)}`;
+    if (!inputText) return result;
+
+    if (inputText.length <= width) {
+      return inputText;
     }
 
-    return stringToTruncate;
+    let truncatedString;
+
+    if (width - charCount <= 0) {
+      truncatedString = inputText.slice(0, width).trim();
+
+      result = `${truncatedString} [${char.repeat(charCount)}]`;
+    } else {
+      truncatedString = inputText.slice(0, width - charCount).trim();
+
+      result = `${truncatedString}${char.repeat(charCount)}`;
+    }
+
+    return result;
   },
 };

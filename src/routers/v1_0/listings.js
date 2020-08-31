@@ -15,7 +15,7 @@ const router = express.Router();
 
 router.get(
   '/',
-  authMiddleware.authRequired,
+  authMiddleware.authOptional,
   validationMiddleware(listingValidator.retrieveListingListSchema),
   (req, res) => {
     listingController.retrieveListingList(req, res);

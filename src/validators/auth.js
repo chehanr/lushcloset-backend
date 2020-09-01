@@ -14,4 +14,13 @@ module.exports = {
       password: Joi.string().max(128).required(),
     }),
   },
+  verifyEmailSchema: {
+    QUERY: Joi.object({
+      userId: Joi.string().uuid().required(),
+      token: Joi.string()
+        .regex(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+/=]*$/)
+        .required(),
+    }),
+  },
+  resendVerifyEmailSchema: {},
 };

@@ -1,5 +1,6 @@
 module.exports = {
   port: process.env.PORT || 3000,
+  url: process.env.URL || 'http://localhost:3000',
   jwtSecret: process.env.JWT_SECRET || 'secret',
   jwtExpirationTime: process.env.JWT_EXPIRATION_TIME || '1d',
   googleClientId: process.env.GOOGLE_CLIENT_ID,
@@ -11,4 +12,11 @@ module.exports = {
   b2AppKey: process.env.B2_APP_KEY,
   b2BucketName: process.env.B2_BUCKET_NAME || 'lushcloset',
   b2BucketEndpoint: process.env.B2_BUCKET_ENDPOINT,
+  mailgunApiKey: process.env.MAILGUN_API_KEY,
+  mailgunDomain: process.env.MAILGUN_DOMAIN,
+  mailgunPublicKey: process.env.MAILGUN_PUBLIC_KEY,
+  autoUserEmailVerify: process.env.AUTO_USER_EMAIL_VERIFY === 'true' || true,
+  emailVerifyExpirationTime: process.env.EMAIL_VERIFY_EXPIRATION_TIME || '1d',
+  emailVerifyPath:
+    process.env.EMAIL_VERIFY_PATH || '/api/v1_0/auth/verify/email',
 };

@@ -26,6 +26,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasOne(models.UserVerification, {
+        as: 'userVerification',
+        foreignKey: 'userId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
       this.hasMany(models.ListingEnquiry, {
         as: 'listingEnquiries',
         foreignKey: 'userId',
@@ -92,11 +99,23 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.UserVerification.destroy({
+            where: { userId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
         afterRestore: async (instance, options) => {
           await sequelize.models.AuthLocal.restore({
+            where: { userId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.UserVerification.restore({
             where: { userId: instance.id },
           }).catch((error) => {
             logger.error(error);

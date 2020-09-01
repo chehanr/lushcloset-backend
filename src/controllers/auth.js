@@ -1,5 +1,7 @@
 const BaseController = require('./base');
 const authUtils = require('../utils/auth');
+const mailUtils = require('../utils/mail');
+const serverConfig = require('../configs/server');
 const models = require('../models');
 const { errorResponses } = require('../constants/errors');
 
@@ -8,75 +10,85 @@ class AuthController extends BaseController {
    * Create a local user (register).
    */
   async createLocalUserItem(req, res) {
-    let errorResponseObj;
+    let errorResponseData;
 
     if (req.validated.body?.error) {
-      errorResponseObj = errorResponses.validationBodyError;
-      errorResponseObj.extra = req.validated.body.error;
+      errorResponseData = errorResponses.validationBodyError;
+      errorResponseData.extra = req.validated.body.error;
 
-      return this.unprocessableEntity(res, errorResponseObj);
+      return this.unprocessableEntity(res, errorResponseData);
     }
 
+    const { email, name, password } = req.validated.body.value;
+
+    let userObj;
+
     try {
-      const foundUserObj = await models.User.findOne({
-        where: {
-          email: req.validated.body.value.email,
-        },
-      });
-
-      if (foundUserObj) {
-        return this.conflict(res, errorResponses.userAlreadyExistsError);
-      }
-
-      const newUserObj = await models.sequelize.transaction(async (t) => {
-        const userObj = await models.User.create(
-          {
-            name: req.validated.body.value.name,
-            email: req.validated.body.value.email,
-          },
-          {
-            transaction: t,
-          }
-        );
-
-        await models.AuthLocal.create(
-          {
-            userId: userObj.id,
-            password: req.validated.body.value.password,
-          },
-          {
-            transaction: t,
-          }
-        );
-
-        return userObj;
-      });
-
-      if (newUserObj) {
-        const tokenUserObj = {
-          user: {
-            id: newUserObj.id,
-            email: newUserObj.email,
-          },
-        };
-
-        const token = authUtils.generateJwt(tokenUserObj);
-
-        if (token) {
-          const responseObj = {
-            access_token: token,
-          };
-
-          return this.ok(res, responseObj);
-        }
-
-        return this.fail(res, 'Error creating token');
-      }
-
-      return this.fail(res, 'Error creating new local user');
+      userObj = await models.User.findOne({ where: { email } });
     } catch (error) {
       return this.fail(res, error);
     }
+
+    if (userObj) {
+      return this.conflict(res, errorResponses.userAlreadyExistsError);
+    }
+
+    try {
+      await models.sequelize.transaction(async (transaction) => {
+        userObj = await models.User.create(
+          {
+            name,
+            email,
+            authLocal: {
+              password,
+            },
+            userVerification: {},
+          },
+          {
+            include: [
+              { model: models.AuthLocal, as: 'authLocal' },
+              { model: models.UserVerification, as: 'userVerification' },
+            ],
+            transaction,
+          }
+        );
+
+        if (serverConfig.autoUserEmailVerify) {
+          // Users are verified automatically.
+          await userObj.userVerification.update(
+            { emailVerifiedAt: models.sequelize.literal('CURRENT_TIMESTAMP') },
+            { transaction }
+          );
+        } else {
+          // Send a verification email.
+          mailUtils.sendEmailVerification(
+            userObj,
+            userObj.userVerification.emailVerifySecret
+          );
+        }
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    let accessToken;
+
+    if (userObj) {
+      const tokenUserObj = {
+        user: {
+          id: userObj.id,
+          email: userObj.email,
+        },
+      };
+
+      accessToken = authUtils.generateJwt(tokenUserObj);
+    }
+
+    const responseData = {
+      accessToken,
+    };
+
+    return this.created(res, responseData);
   }
 
   /**
@@ -123,7 +135,7 @@ class AuthController extends BaseController {
 
         if (token) {
           const responseObj = {
-            access_token: token,
+            accessToken: token,
           };
 
           return this.ok(res, responseObj);
@@ -154,7 +166,7 @@ class AuthController extends BaseController {
 
       if (token) {
         const responseObj = {
-          access_token: token,
+          accessToken: token,
         };
 
         return this.ok(res, responseObj);
@@ -168,6 +180,122 @@ class AuthController extends BaseController {
 
   notAuthenticated(req, res) {
     return this.unauthorized(res, errorResponses.userNotAuthenticatedError);
+  }
+
+  /**
+   * Verify a user's email.
+   */
+  async verifyEmail(req, res) {
+    let errorResponseData;
+
+    if (req.validated.query?.error) {
+      errorResponseData = errorResponses.validationQueryError;
+      errorResponseData.extra = req.validated.query.error;
+
+      return this.unprocessableEntity(res, errorResponseData);
+    }
+
+    const { userId, token } = req.validated.query.value;
+
+    let userVerifObj;
+
+    try {
+      userVerifObj = await models.UserVerification.findOne({
+        where: { userId },
+        include: [{ model: models.User, as: 'user' }],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (!userVerifObj) {
+      return this.notFound(res);
+    }
+
+    if (userVerifObj.emailVerifiedAt) {
+      errorResponseData = errorResponses.userAlreadyVerifiedError;
+      errorResponseData.extra = {
+        fields: ['email'],
+      };
+
+      return this.badRequest(res, errorResponseData);
+    }
+
+    let verifyData;
+
+    let isVerified = false;
+
+    try {
+      await models.sequelize.transaction(async (transaction) => {
+        verifyData = mailUtils.decodeEmailToken(
+          token,
+          userVerifObj.emailVerifySecret
+        );
+
+        if (verifyData.id === userVerifObj.userId) {
+          await userVerifObj
+            .update(
+              {
+                emailVerifiedAt: models.sequelize.literal('CURRENT_TIMESTAMP'),
+              },
+              { transaction }
+            )
+            .then(() => {
+              isVerified = true;
+            });
+        }
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (isVerified) {
+      return this.ok(res);
+    }
+
+    return this.unauthorized(res);
+  }
+
+  /**
+   * Resend a verificiation email.
+   */
+  async resendVerifyEmail(req, res) {
+    let errorResponseData;
+
+    let userVerifObj;
+
+    try {
+      userVerifObj = await models.UserVerification.findOne({
+        where: { userId: req.user.id },
+        include: [{ model: models.User, as: 'user' }],
+      });
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    if (!userVerifObj) {
+      return this.notFound(res);
+    }
+
+    if (userVerifObj.emailVerifiedAt) {
+      errorResponseData = errorResponses.userAlreadyVerifiedError;
+      errorResponseData.extra = {
+        fields: ['email'],
+      };
+
+      return this.badRequest(res, errorResponseData);
+    }
+
+    try {
+      mailUtils.sendEmailVerification(
+        userVerifObj.user,
+        userVerifObj.emailVerifySecret
+      );
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    return this.ok(res);
   }
 }
 

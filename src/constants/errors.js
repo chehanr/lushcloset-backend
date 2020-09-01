@@ -11,6 +11,7 @@ const errorTypes = {
   rentalError: 'rentalError',
   purchaseError: 'purchaseError',
   fileError: 'fileError',
+  verificationError: 'verificationError',
 };
 
 const errorResponses = {
@@ -151,6 +152,18 @@ const errorResponses = {
     type: errorTypes.fileError,
     code: 'invalidFilePurpose',
     message: 'This file serves a different purpose',
+    extra: null,
+  },
+  userNotVerifiedError: {
+    type: errorTypes.verificationError,
+    code: 'userNotVerified',
+    message: 'This user is not verified',
+    extra: null,
+  },
+  userAlreadyVerifiedError: {
+    type: errorTypes.verificationError,
+    code: 'userAlreadyVerified',
+    message: 'This user is already verified',
     extra: null,
   },
 };

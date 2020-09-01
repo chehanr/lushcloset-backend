@@ -15,7 +15,7 @@ module.exports = {
   mailgunApiKey: process.env.MAILGUN_API_KEY,
   mailgunDomain: process.env.MAILGUN_DOMAIN,
   mailgunPublicKey: process.env.MAILGUN_PUBLIC_KEY,
-  autoUserEmailVerify: process.env.AUTO_USER_EMAIL_VERIFY === 'true' || true,
+  autoUserEmailVerify: process.env.AUTO_USER_EMAIL_VERIFY === 'true',
   emailVerifyExpirationTime: process.env.EMAIL_VERIFY_EXPIRATION_TIME || '1d',
   emailVerifyPath:
     process.env.EMAIL_VERIFY_PATH || '/api/v1_0/auth/verify/email',

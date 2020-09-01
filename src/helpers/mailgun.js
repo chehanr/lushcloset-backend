@@ -1,23 +1,23 @@
-const mailgun = require('mailgun.js');
+const mailgun = require('mailgun-js');
 
 const serverConfig = require('../configs/server');
 const logger = require('../loaders/winston');
 
 module.exports = class MailgunHelper {
   constructor() {
-    this.mailgun = mailgun.client({
-      username: 'api',
-      key: serverConfig.mailgunApiKey,
-      public_key: serverConfig.mailgunPublicKey,
+    this.mailgun = mailgun({
+      apiKey: serverConfig.mailgunApiKey,
+      publicApiKey: serverConfig.mailgunPublicKey,
+      domain: serverConfig.mailgunDomain,
     });
-    this.domain = serverConfig.mailgunDomain;
   }
 
   sendMail(from, to, subject, text, html) {
-    this.mailgun.messages
-      .create(this.domain, { from, to, subject, text, html })
-      .then((message) => {
-        logger.info(`Mailgun (sent): ${message.id}`);
+    this.mailgun
+      .messages()
+      .send({ from, to, subject, text, html })
+      .then((body) => {
+        logger.info(`Mailgun (sent): ${body.id}`);
       })
       .catch((error) => {
         logger.error(error);

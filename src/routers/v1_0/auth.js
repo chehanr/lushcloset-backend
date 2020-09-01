@@ -8,9 +8,11 @@ const authValidator = require('../../validators/auth');
 
 const router = express.Router();
 
-// /local/login       post
-// /local/register    post
-// /me                get
+// /local/login               post
+// /local/register            post
+// /me                        get
+// /verify/email              get
+// /verify/email/resend       post
 
 router.post(
   '/local/login',
@@ -31,5 +33,22 @@ router.post(
 router.get('/me', authMiddleware.authRequired, (req, res) => {
   userController.retrieveAuthenticatedUserItem(req, res);
 });
+
+router.get(
+  '/verify/email',
+  validationMiddleware(authValidator.verifyEmailSchema),
+  async (req, res) => {
+    await authController.verifyEmail(req, res);
+  }
+);
+
+router.post(
+  '/verify/email/resend',
+  authMiddleware.authRequired,
+  validationMiddleware(authValidator.resendVerifyEmailSchema),
+  async (req, res) => {
+    await authController.resendVerifyEmail(req, res);
+  }
+);
 
 module.exports = router;

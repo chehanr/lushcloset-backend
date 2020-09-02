@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 module.exports = {
-  retrieveUserItemSchema: {
+  getUserSchema: {
     PARAMS: Joi.object({
       userId: Joi.string().uuid().required(),
     }),

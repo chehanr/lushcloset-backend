@@ -4,10 +4,10 @@ const { errorResponses } = require('../constants/errors');
 
 class UserController extends BaseController {
   /**
-   * Retrieve a user \
+   * Get a user \
    * with params `userId`.
    */
-  async retrieveUserItem(req, res) {
+  async getUser(req, res) {
     let errorResponseData;
 
     if (req.validated.params?.error) {

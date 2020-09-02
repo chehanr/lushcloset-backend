@@ -12,9 +12,9 @@ const router = express.Router();
 router.get(
   '/:userId',
   authMiddleware.authRequired,
-  validationMiddleware(userValidator.retrieveUserItemSchema),
-  (req, res) => {
-    userController.retrieveUserItem(req, res);
+  validationMiddleware(userValidator.getUserSchema),
+  async (req, res) => {
+    await userController.getUser(req, res);
   }
 );
 

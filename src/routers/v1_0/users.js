@@ -7,8 +7,7 @@ const userValidator = require('../../validators/user');
 
 const router = express.Router();
 
-// /:userId                   get, put, delete
-// /:userId/notes             get
+// /:userId                   get
 
 router.get(
   '/:userId',
@@ -18,18 +17,5 @@ router.get(
     userController.retrieveUserItem(req, res);
   }
 );
-
-router.put(
-  '/:userId',
-  authMiddleware.authRequired,
-  validationMiddleware(userValidator.updateUserItemSchema),
-  (req, res) => {
-    userController.updateUserItem(req, res);
-  }
-);
-
-router.delete('/:userId', authMiddleware.authRequired, (req, res) => {
-  userController.imATeapot(req, res);
-});
 
 module.exports = router;

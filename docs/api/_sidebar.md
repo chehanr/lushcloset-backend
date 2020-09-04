@@ -5,4 +5,6 @@
 - [Versioning](api/versioning.md)
 
 - Core Resources
-  - [Listings](api/core/listings.md)
+  - [Auth](api/core/auth.md)
+  - [Me](api/core/me.md)
+  - [Users](api/core/users.md)

@@ -43,10 +43,6 @@ The user's email address.
 
 The user's password.
 
-**avatarFileId** _optional_
-
-A file id of an uploaded user avatar.
-
 <!-- div:right-panel -->
 
 <!-- tabs:start -->
@@ -57,8 +53,7 @@ A file id of an uploaded user avatar.
 curl -L -X POST 'http://localhost:3001/api/v1_0/auth/local/register' \
 -F 'name=John Doe' \
 -F 'email=johndoe@gmail.com' \
--F 'password=password' \
--F 'avatarFileId=9eabce8a-9b7c-4c83-9f60-3da6204087ba'
+-F 'password=password'
 ```
 
 <!-- tabs:end -->

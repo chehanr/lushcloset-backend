@@ -98,6 +98,10 @@ Any parameters not provided will be left unchanged.
 
 The user's name.
 
+**avatarFileId** _optional_
+
+A file id of an uploaded user avatar.
+
 <!-- div:right-panel -->
 
 <!-- tabs:start -->
@@ -107,7 +111,8 @@ The user's name.
 ```shell
 curl -L -X PUT 'http://localhost:3001/api/v1_0/me' \
 -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNzZmZTM2YWMtMThkYS00YzgzLTgyOWItMzhjMjNkNjhlYjgwIiwiZW1haWwiOiJqb2huZG9lQGdtYWlsLmNvbSJ9LCJpYXQiOjE1OTkxOTkzMjUsImV4cCI6MTU5OTI4NTcyNX0.3aunA2J0ZqXrCuC_4GA578ZORbSfQigXxMfwrJXzgT8' \
--F 'name=Joe Dirt'
+-F 'name=Joe Dirt' \
+-F 'avatarFileId=9eabce8a-9b7c-4c83-9f60-3da6204087ba'
 ```
 
 <!-- tabs:end -->

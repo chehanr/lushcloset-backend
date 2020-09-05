@@ -1,6 +1,7 @@
 const models = require('../models');
 const BaseController = require('./base');
 const { errorResponses } = require('../constants/errors');
+const fileUtils = require('../utils/file');
 
 class UserController extends BaseController {
   /**
@@ -22,7 +23,30 @@ class UserController extends BaseController {
     let userObj;
 
     try {
-      userObj = await models.User.findByPk(userId);
+      userObj = await models.User.findByPk(userId, {
+        include: [
+          {
+            model: models.UserVerification,
+            as: 'userVerification',
+          },
+          {
+            model: models.UserAvatar,
+            as: 'userAvatar',
+            include: [
+              {
+                model: models.File,
+                as: 'file',
+                include: [
+                  {
+                    model: models.FileLink,
+                    as: 'fileLinks',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
     } catch (error) {
       return this.fail(res, error);
     }
@@ -34,9 +58,32 @@ class UserController extends BaseController {
     const responseData = {
       id: userObj.id,
       name: userObj.name,
-      avatar: {},
+      avatar: null,
+      emailVerifiedAt: userObj.userVerification?.emailVerifiedAt || null,
       createdAt: userObj.createdAt,
     };
+
+    if (userObj.userAvatar) {
+      const userAvatarObj = userObj.userAvatar;
+
+      responseData.avatar = {};
+
+      responseData.avatar.id = userAvatarObj.id;
+      responseData.avatar.file = {
+        id: userAvatarObj.file.id,
+        links: [],
+      };
+
+      userAvatarObj.file.fileLinks.forEach((fileLinkObj) => {
+        responseData.avatar.file.links.push({
+          id: fileLinkObj.id,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+        });
+      });
+    }
 
     return this.ok(res, responseData);
   }

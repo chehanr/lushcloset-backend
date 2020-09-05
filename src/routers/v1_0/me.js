@@ -8,6 +8,7 @@ const meValidator = require('../../validators/me');
 const router = express.Router();
 
 // /                          get, put
+// /avatar                    post
 
 router.get(
   '/',
@@ -24,6 +25,15 @@ router.put(
   validationMiddleware(meValidator.updateMeSchema),
   async (req, res) => {
     await meController.updateMe(req, res);
+  }
+);
+
+router.post(
+  '/avatar',
+  authMiddleware.authRequired,
+  validationMiddleware(meValidator.createAvatarSchema),
+  async (req, res) => {
+    await meController.createAvatar(req, res);
   }
 );
 

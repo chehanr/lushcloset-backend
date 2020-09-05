@@ -9,21 +9,14 @@ class MeController extends BaseController {
    */
   async getMe(req, res) {
     try {
-      req.user.userVerification = await req.user.getUserVerification({});
+      req.user.userVerification = await req.user.getUserVerification();
 
       req.user.userAvatar = await req.user.getUserAvatar({
-        limit: 1,
-        order: [['createdAt', 'DESC']],
         include: [
           {
             model: models.File,
             as: 'file',
-            include: [
-              {
-                model: models.FileLink,
-                as: 'fileLinks',
-              },
-            ],
+            include: [{ model: models.FileLink, as: 'fileLinks' }],
           },
         ],
       });
@@ -82,7 +75,7 @@ class MeController extends BaseController {
     const { name } = req.validated.body.value;
 
     try {
-      req.user.userVerification = await req.user.getUserVerification({});
+      req.user.userVerification = await req.user.getUserVerification();
 
       req.user.userAvatar = await req.user.getUserAvatar({
         limit: 1,
@@ -91,12 +84,7 @@ class MeController extends BaseController {
           {
             model: models.File,
             as: 'file',
-            include: [
-              {
-                model: models.FileLink,
-                as: 'fileLinks',
-              },
-            ],
+            include: [{ model: models.FileLink, as: 'fileLinks' }],
           },
         ],
       });
@@ -165,12 +153,7 @@ class MeController extends BaseController {
 
     try {
       userObj = await models.User.findByPk(req.user.id, {
-        include: [
-          {
-            model: models.UserAvatar,
-            as: 'userAvatar',
-          },
-        ],
+        include: [{ model: models.UserAvatar, as: 'userAvatar' }],
       });
 
       fileObj = await models.File.findByPk(fileId);
@@ -202,22 +185,12 @@ class MeController extends BaseController {
         }
 
         userAvatarObj = await models.UserAvatar.create(
-          {
-            userId: userObj.id,
-            fileId,
-          },
-          {
-            transaction,
-          }
+          { userId: userObj.id, fileId },
+          { transaction }
         );
 
         userAvatarObj.file = await userAvatarObj.getFile({
-          include: [
-            {
-              model: models.FileLink,
-              as: 'fileLinks',
-            },
-          ],
+          include: [{ model: models.FileLink, as: 'fileLinks' }],
           transaction,
         });
       });
@@ -225,7 +198,33 @@ class MeController extends BaseController {
       return this.fail(res, error);
     }
 
-    return this.ok(res);
+    const responseData = {
+      id: userAvatarObj.id,
+      file: {
+        id: userAvatarObj.file.id,
+        purpose: userAvatarObj.file.purpose,
+        links: [],
+      },
+      createdAt: userAvatarObj.createdAt,
+      updatedAt: userAvatarObj.updatedAt,
+    };
+
+    userAvatarObj.file.fileLinks.forEach((fileLinkObj) => {
+      responseData.file.links.push({
+        id: fileLinkObj.id,
+        fileName: fileLinkObj.fileName,
+        fileSize: fileLinkObj.fileSize,
+        fileContentType: fileLinkObj.fileContentType,
+        url: fileUtils.getFileLinkUrl(fileLinkObj),
+        metadata: fileLinkObj.metadata || {},
+        uploadedAt: fileLinkObj.uploadedAt,
+        expiresAt: fileLinkObj.expiresAt,
+        createdAt: fileLinkObj.createdAt,
+        updatedAt: fileLinkObj.updatedAt,
+      });
+    });
+
+    return this.created(res, responseData);
   }
 }
 

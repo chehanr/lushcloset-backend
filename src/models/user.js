@@ -33,6 +33,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+      this.hasOne(models.UserAvatar, {
+        as: 'userAvatar',
+        foreignKey: 'userId',
+        hooks: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      });
       this.hasMany(models.ListingEnquiry, {
         as: 'listingEnquiries',
         foreignKey: 'userId',
@@ -105,6 +112,12 @@ module.exports = (sequelize, DataTypes) => {
           }).catch((error) => {
             logger.error(error);
           });
+
+          await sequelize.models.UserAvatar.destroy({
+            where: { userId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
         },
 
         // eslint-disable-next-line no-unused-vars
@@ -116,6 +129,12 @@ module.exports = (sequelize, DataTypes) => {
           });
 
           await sequelize.models.UserVerification.restore({
+            where: { userId: instance.id },
+          }).catch((error) => {
+            logger.error(error);
+          });
+
+          await sequelize.models.UserAvatar.restore({
             where: { userId: instance.id },
           }).catch((error) => {
             logger.error(error);

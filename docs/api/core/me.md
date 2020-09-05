@@ -13,7 +13,8 @@ The API allows you to retrieve and update the authenticated user.
 ## Endpoints
 
 **GET** `/v1_0/me` \
-**PUT** `/v1_0/me`
+**PUT** `/v1_0/me` \
+**POST** `/v1_0/me/avatar`
 
 <!-- panels:end -->
 
@@ -98,10 +99,6 @@ Any parameters not provided will be left unchanged.
 
 The user's name.
 
-**avatarFileId** _optional_
-
-A file id of an uploaded user avatar.
-
 <!-- div:right-panel -->
 
 <!-- tabs:start -->
@@ -111,8 +108,7 @@ A file id of an uploaded user avatar.
 ```shell
 curl -L -X PUT 'http://localhost:3001/api/v1_0/me' \
 -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNzZmZTM2YWMtMThkYS00YzgzLTgyOWItMzhjMjNkNjhlYjgwIiwiZW1haWwiOiJqb2huZG9lQGdtYWlsLmNvbSJ9LCJpYXQiOjE1OTkxOTkzMjUsImV4cCI6MTU5OTI4NTcyNX0.3aunA2J0ZqXrCuC_4GA578ZORbSfQigXxMfwrJXzgT8' \
--F 'name=Joe Dirt' \
--F 'avatarFileId=9eabce8a-9b7c-4c83-9f60-3da6204087ba'
+-F 'name=Joe Dirt'
 ```
 
 <!-- tabs:end -->
@@ -147,6 +143,75 @@ curl -L -X PUT 'http://localhost:3001/api/v1_0/me' \
     "emailVerifiedAt": "2020-08-31T12:52:40.537Z",
     "createdAt": "2020-08-31T12:47:54.537Z",
     "updatedAt": "2020-09-04T06:56:14.615Z"
+  }
+}
+```
+
+<!-- panels:end -->
+
+---
+
+<!-- panels:start -->
+
+<!-- div:title-panel -->
+
+## Set an avatar
+
+<!-- div:left-panel -->
+
+Set the avatar of the authenticated user with an uploaded file. \
+This requires authentication.
+
+### Parameters
+
+**fileId** _required_
+
+A file id of an uploaded user avatar.
+
+<!-- div:right-panel -->
+
+<!-- tabs:start -->
+
+# **cURL**
+
+```shell
+curl -L -X POST 'http://localhost:3001/api/v1_0/me/avatar' \
+-H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNzZmZTM2YWMtMThkYS00YzgzLTgyOWItMzhjMjNkNjhlYjgwIiwiZW1haWwiOiJqb2huZG9lQGdtYWlsLmNvbSJ9LCJpYXQiOjE1OTkxOTkzMjUsImV4cCI6MTU5OTI4NTcyNX0.3aunA2J0ZqXrCuC_4GA578ZORbSfQigXxMfwrJXzgT8' \
+-F 'fileId=d8621497-197c-4e8b-a4cc-2a11d91b3824'
+```
+
+<!-- tabs:end -->
+
+## Response
+
+```json
+{
+  "success": true,
+  "error": null,
+  "data": {
+    "id": "76b08018-25b9-4f55-bfee-c9323da0cadc",
+    "file": {
+      "id": "d8621497-197c-4e8b-a4cc-2a11d91b3824",
+      "purpose": "user_avatar",
+      "links": [
+        {
+          "id": "bac36f13-a4f1-41fd-8b10-e22519cd4a1e",
+          "fileName": "static/uploads/user-avatar_d8621497-197c-4e8b-a4cc-2a11d91b3824_ecdf3485-70e7-4ebf-b69e-c43e00171ccd_1f8415c7-6688-4e78-a745-3797fb94c8d3.jpg",
+          "fileSize": 43364,
+          "fileContentType": "image/jpeg",
+          "url": "https://lushcloset.s3.us-west-002.backblazeb2.com/static/uploads/user-avatar_d8621497-197c-4e8b-a4cc-2a11d91b3824_ecdf3485-70e7-4ebf-b69e-c43e00171ccd_1f8415c7-6688-4e78-a745-3797fb94c8d3.jpg",
+          "metadata": {
+            "original": "true"
+          },
+          "uploadedAt": "2020-09-05T07:39:18.000Z",
+          "expiresAt": null,
+          "createdAt": "2020-09-05T07:39:18.853Z",
+          "updatedAt": "2020-09-05T07:39:18.853Z"
+        }
+      ]
+    },
+    "createdAt": "2020-09-05T07:39:40.563Z",
+    "updatedAt": "2020-09-05T07:39:40.563Z"
   }
 }
 ```

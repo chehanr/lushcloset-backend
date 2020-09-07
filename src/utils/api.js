@@ -45,11 +45,11 @@ module.exports = {
     let truncatedString;
 
     if (width - charCount <= 0) {
-      truncatedString = inputText.slice(0, width).trim();
+      truncatedString = inputText.slice(0, width);
 
       result = `${truncatedString} [${char.repeat(charCount)}]`;
     } else {
-      truncatedString = inputText.slice(0, width - charCount).trim();
+      truncatedString = inputText.slice(0, width - charCount);
 
       result = `${truncatedString}${char.repeat(charCount)}`;
     }

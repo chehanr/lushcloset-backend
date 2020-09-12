@@ -1,10 +1,15 @@
 const Joi = require('joi');
 
+const {
+  LISTING_TITLE_BODY,
+  ORDER_BY_LAT_LNG_QUERY,
+} = require('../constants/regex');
+
 module.exports = {
   createListingItemSchema: {
     BODY: Joi.object({
       title: Joi.string() // TODO: Make custom error message.
-        .regex(/^[\w ]*[^\W_][\w ]*$/) // Letters, numbers and spaces only.
+        .regex(LISTING_TITLE_BODY)
         .max(256)
         .required(),
       description: Joi.string().min(128).required(),
@@ -36,17 +41,7 @@ module.exports = {
 
   retrieveListingListSchema: {
     QUERY: Joi.object({
-      orderBy: Joi.alternatives().try(
-        Joi.array().items(
-          Joi.valid(
-            'priceValue',
-            '-priceValue',
-            'createdAt',
-            '-createdAt',
-            'updatedAt',
-            '-updatedAt'
-          )
-        ),
+      orderBy: Joi.array().items(
         Joi.valid(
           'priceValue',
           '-priceValue',
@@ -56,21 +51,16 @@ module.exports = {
           '-updatedAt'
         )
       ),
-      filterBy: Joi.alternatives().try(
-        Joi.array().items(
-          Joi.valid(
-            'isRentable',
-            'isPurchasable',
-            'isAvailable',
-            '-isAvailable'
-          )
-        ),
+      filterBy: Joi.array().items(
         Joi.valid('isRentable', 'isPurchasable', 'isAvailable', '-isAvailable')
       ),
       titleiLike: Joi.string(),
       priceGte: Joi.number(),
       priceLte: Joi.number(),
       currencyTypeIso: Joi.string().length(3).uppercase(), // Limit to AUD?
+      userId: Joi.array().items(Joi.string().uuid()),
+      categoryRefId: Joi.array().items(Joi.string().uuid()),
+      orderByLatLng: Joi.string().regex(ORDER_BY_LAT_LNG_QUERY),
       limit: Joi.number().positive().allow(0),
       offset: Joi.number().positive().allow(0),
     }),

@@ -424,46 +424,65 @@ class ListingController extends BaseController {
    * TODO: Add lat lng search LMAO!!!!
    */
   async retrieveListingList(req, res) {
-    let errorResponseObj;
+    let errorResponseData;
 
     if (req.validated.query?.error) {
-      errorResponseObj = errorResponses.validationQueryError;
-      errorResponseObj.extra = req.validated.query.error;
+      errorResponseData = errorResponses.validationQueryError;
+      errorResponseData.extra = req.validated.query.error;
 
-      return this.unprocessableEntity(res, errorResponseObj);
+      return this.unprocessableEntity(res, errorResponseData);
     }
 
+    const {
+      orderBy,
+      filterBy,
+      titleiLike,
+      priceGte,
+      priceLte,
+      currencyTypeIso,
+      userId,
+      categoryRefId,
+      limit,
+      offset,
+    } = req.validated.query.value;
+
+    const orderQuery = [
+      ['listingImages', 'orderIndex', 'ASC'],
+      ['listingImages', 'createdAt', 'DESC'],
+    ];
+    const whereQuery = {
+      listing: {},
+      listingStatus: {},
+      listingPrice: {},
+      listingCategory: {},
+      user: {},
+    };
+    const paginationQuery = {
+      limit: apiConfig.defaultPaginationLimit,
+      offset: 0,
+    };
+
     try {
-      const orderSqlQuery = [];
-
-      if (typeof req.validated.query.value.orderBy !== 'undefined') {
-        let queries = [];
-
-        if (Array.isArray(req.validated.query.value.orderBy)) {
-          queries = [...req.validated.query.value.orderBy];
-        } else {
-          queries = [req.validated.query.value.orderBy];
-        }
-
-        queries.forEach((queryVal) => {
-          switch (queryVal) {
+      if (orderBy && Array.isArray(orderBy)) {
+        orderBy.forEach((val) => {
+          switch (val) {
             case 'priceValue':
-              orderSqlQuery.push(['listingPrice', 'value', 'ASC']);
+              orderQuery.push(['listingPrice', 'value', 'ASC']);
               break;
             case '-priceValue':
-              orderSqlQuery.push(['listingPrice', 'value', 'DESC']);
+              orderQuery.push(['listingPrice', 'value', 'DESC']);
               break;
             case 'createdAt':
-              orderSqlQuery.push(['createdAt', 'ASC']);
+              orderQuery.push(['createdAt', 'ASC']);
               break;
             case '-createdAt':
-              orderSqlQuery.push(['createdAt', 'DESC']);
+              orderQuery.push(['createdAt', 'DESC']);
               break;
             case 'updatedAt':
-              orderSqlQuery.push(['updatedAt', 'ASC']);
+              orderQuery.push(['updatedAt', 'ASC']);
               break;
             case '-updatedAt':
-              orderSqlQuery.push(['updatedAt', 'DESC']);
+              orderQuery.push(['updatedAt', 'DESC']);
               break;
             default:
               break;
@@ -471,36 +490,23 @@ class ListingController extends BaseController {
         });
       } else {
         // Order by `createdAt` by default.
-        orderSqlQuery.push(['createdAt', 'DESC']);
+        orderQuery.push(['createdAt', 'DESC']);
       }
 
-      const whereSqlQuery = {};
-
-      // Only show available listings by default.
-      whereSqlQuery['$listingStatus.status_type$'] = 'available';
-
-      if (typeof req.validated.query.value.filterBy !== 'undefined') {
-        let queries = [];
-
-        if (Array.isArray(req.validated.query.value.filterBy)) {
-          queries = [...req.validated.query.value.filterBy];
-        } else {
-          queries = [req.validated.query.value.filterBy];
-        }
-
-        queries.forEach((queryVal) => {
-          switch (queryVal) {
+      if (filterBy && Array.isArray(filterBy)) {
+        filterBy.forEach((val) => {
+          switch (val) {
             case 'isRentable':
-              whereSqlQuery.listingType = 'rent';
+              whereQuery.listing.listingType = 'rent';
               break;
             case 'isPurchasable':
-              whereSqlQuery.listingType = 'sell';
+              whereQuery.listing.listingType = 'sell';
               break;
             case 'isAvailable':
-              whereSqlQuery['$listingStatus.status_type$'] = 'available';
+              whereQuery.listingStatus.statusType = 'available';
               break;
             case '-isAvailable':
-              whereSqlQuery['$listingStatus.status_type$'] = {
+              whereQuery.listingStatus.statusType = {
                 [models.Sequelize.Op.not]: 'available',
               };
               break;
@@ -508,122 +514,224 @@ class ListingController extends BaseController {
               break;
           }
         });
+      } else {
+        // Only show available listings by default.
+        whereQuery.listingStatus.statusType = 'available';
       }
 
-      if (typeof req.validated.query.value.titleiLike !== 'undefined') {
-        whereSqlQuery.title = {
-          [models.Sequelize.Op
-            .iLike]: `%${req.validated.query.value.titleiLike}%`,
+      if (titleiLike) {
+        whereQuery.listing.title = {
+          [models.Sequelize.Op.iLike]: `%${titleiLike}%`,
         };
       }
 
-      if (typeof req.validated.query.value.priceGte !== 'undefined') {
-        whereSqlQuery['$listingPrice.value$'] = {
-          [models.Sequelize.Op.gte]: req.validated.query.value.priceGte,
+      if (priceGte) {
+        whereQuery.listingPrice.value = {
+          [models.Sequelize.Op.gte]: priceGte,
         };
       }
 
-      if (typeof req.validated.query.value.priceLte !== 'undefined') {
-        whereSqlQuery['$listingPrice.value$'] = {
-          [models.Sequelize.Op.lte]: req.validated.query.value.priceLte,
+      if (priceLte) {
+        whereQuery.listingPrice.value = {
+          [models.Sequelize.Op.lte]: priceLte,
         };
       }
 
-      if (typeof req.validated.query.value.currencyTypeIso !== 'undefined') {
-        whereSqlQuery['$listingPrice.currency_type_iso$'] =
-          req.validated.query.value.currencyTypeIso;
+      if (currencyTypeIso) {
+        whereQuery.listingPrice.currencyTypeIso = currencyTypeIso;
       }
 
-      const paginationSqlQuery = {
-        limit: apiConfig.defaultPaginationLimit,
-        offset: 0,
-      };
-
-      if (typeof req.validated.query.value.limit !== 'undefined') {
-        if (req.validated.query.value.limit <= apiConfig.maxPaginationLimit)
-          paginationSqlQuery.limit = req.validated.query.value.limit;
+      if (userId && Array.isArray(userId)) {
+        whereQuery.user.id = {
+          [models.Sequelize.Op.in]: userId,
+        };
       }
 
-      if (typeof req.validated.query.value.offset !== 'undefined') {
-        paginationSqlQuery.offset = req.validated.query.value.offset;
+      if (categoryRefId && Array.isArray(categoryRefId)) {
+        whereQuery.listingCategory.listingCategoryRefId = {
+          [models.Sequelize.Op.in]: categoryRefId,
+        };
       }
 
-      const listingObjs = await models.Listing.findAndCountAll({
-        where: {
-          ...whereSqlQuery,
-        },
-        order: [...orderSqlQuery],
-        ...paginationSqlQuery,
+      if (limit && limit <= apiConfig.maxPaginationLimit) {
+        paginationQuery.limit = limit;
+      }
+
+      if (offset) {
+        paginationQuery.offset = offset;
+      }
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    let listingObjs;
+
+    try {
+      listingObjs = await models.Listing.findAndCountAll({
+        where: whereQuery.listing,
+        order: orderQuery,
+        ...paginationQuery,
+        subQuery: false,
         include: [
-          {
-            model: models.User,
-            as: 'user',
-          },
-          {
-            model: models.ListingAddress,
-            as: 'listingAddress',
-          },
+          { model: models.User, as: 'user', where: whereQuery.user },
+          { model: models.ListingAddress, as: 'listingAddress' },
           {
             model: models.ListingPrice,
             as: 'listingPrice',
+            where: whereQuery.listingPrice,
           },
           {
             model: models.ListingStatus,
             as: 'listingStatus',
+            where: whereQuery.listingStatus,
           },
+          {
+            model: models.ListingImage,
+            as: 'listingImages',
+            include: [
+              {
+                model: models.File,
+                as: 'file',
+                include: [{ model: models.FileLink, as: 'fileLinks' }],
+              },
+            ],
+          },
+          {
+            model: models.ListingCategory,
+            as: 'listingCategory',
+            include: [
+              {
+                model: models.ListingCategoryRef,
+                as: 'listingCategoryRef',
+              },
+            ],
+            where: whereQuery.listingCategory,
+          },
+          { model: models.ListingMetadata, as: 'listingMetadata' },
         ],
       });
-
-      const responseObj = {
-        count: listingObjs.count,
-        ...paginationSqlQuery,
-        listings: [],
-      };
-
-      listingObjs.rows.forEach((element) => {
-        const geocodingData = element.listingAddress.googleGeocodingData;
-
-        const approxAddressComponentsObj = googleMapsUtils.getAddressComponents(
-          geocodingData,
-          true
-        );
-
-        const shortDescription = apiUtils.truncateString(
-          apiUtils.cleanString(element.description),
-          256
-        );
-
-        responseObj.listings.push({
-          id: element.id,
-          title: element.title,
-          shortDescription: shortDescription,
-          description: null,
-          listingType: element.listingType,
-          price: {
-            value: element.listingPrice.value,
-            currencyTypeIso: element.listingPrice.currencyTypeIso,
-          },
-          user: {
-            id: element.user.id,
-            name: element.user.name,
-          },
-          approximateLocation: {
-            formattedAddress: googleMapsUtils.getFormattedAddress(
-              approxAddressComponentsObj
-            ),
-            addressComponents: approxAddressComponentsObj,
-          },
-          preciseLocation: null,
-          status: element.listingStatus.statusType,
-          createdAt: element.createdAt,
-          updatedAt: element.updatedAt,
-        });
-      });
-
-      return this.ok(res, responseObj);
     } catch (error) {
       return this.fail(res, error);
     }
+
+    const responseData = {
+      count: listingObjs.count,
+      ...paginationQuery,
+      listings: [],
+    };
+
+    try {
+      if (listingObjs && listingObjs.rows) {
+        listingObjs.rows.forEach((listingObj) => {
+          const geocodingData = listingObj.listingAddress.googleGeocodingData;
+
+          const addressComponents = googleMapsUtils.getAddressComponents(
+            geocodingData
+          );
+
+          const approxAddressComponents = googleMapsUtils.getAddressComponents(
+            geocodingData,
+            true
+          );
+
+          const shortDescription = apiUtils.truncateString(
+            apiUtils.cleanString(listingObj.description),
+            256
+          );
+
+          const formattedApproxAddress = googleMapsUtils.getFormattedAddress(
+            approxAddressComponents
+          );
+
+          const listing = {
+            id: listingObj.id,
+            title: listingObj.title,
+            shortDescription: shortDescription,
+            description: null,
+            listingType: listingObj.listingType,
+            status: listingObj.listingStatus.statusType,
+            price: {
+              value: listingObj.listingPrice.value,
+              currencyTypeIso: listingObj.listingPrice.currencyTypeIso,
+            },
+            createdBy: {
+              id: listingObj.user.id,
+              name: listingObj.user.name,
+            },
+            approximateLocation: {
+              formattedAddress: formattedApproxAddress,
+              addressComponents: approxAddressComponents,
+            },
+            preciseLocation: {
+              submittedAddress: listingObj.listingAddress.submittedAddress,
+              formattedAddress: listingObj.listingAddress.formattedAddress,
+              addressComponents: addressComponents,
+              geographic: {
+                lat:
+                  listingObj.listingAddress.googleGeocodingData?.geometry
+                    ?.location.lat || null,
+                lng:
+                  listingObj.listingAddress.googleGeocodingData?.geometry
+                    ?.location.lng || null,
+              },
+              googlePlaceId:
+                // eslint-disable-next-line camelcase
+                listingObj.listingAddress.googleGeocodingData?.place_id || null,
+              note: listingObj.listingAddress.note || null,
+            },
+            category: {
+              ref: {
+                id: listingObj.listingCategory.listingCategoryRef.id,
+                name: listingObj.listingCategory.listingCategoryRef.name,
+              },
+            },
+            metaData: {
+              size: listingObj.listingMetadata.size,
+              brandName: listingObj.listingMetadata.brandName,
+              condition: listingObj.listingMetadata.condition,
+            },
+            images: [],
+            createdAt: listingObj.createdAt,
+            updatedAt: listingObj.updatedAt,
+          };
+
+          if (req.user.id !== listingObj.userId) {
+            // Remove listing fields if not created \
+            // by the authenticated user.
+            listing.preciseLocation = null;
+          }
+
+          listingObj.listingImages.forEach((listingImageObj) => {
+            const image = {
+              id: listingImageObj.id,
+              orderIndex: listingImageObj.orderIndex || 0,
+              file: {
+                id: listingImageObj.file.id,
+                links: [],
+              },
+            };
+
+            listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+              image.file.links.push({
+                id: fileLinkObj.id,
+                fileSize: fileLinkObj.fileSize,
+                fileContentType: fileLinkObj.fileContentType,
+                url: fileUtils.getFileLinkUrl(fileLinkObj),
+                metadata: fileLinkObj.metadata || null,
+              });
+            });
+
+            listing.images.push(image);
+          });
+
+          responseData.listings.push(listing);
+        });
+      }
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    return this.ok(res, responseData);
   }
 
   /**

@@ -8,6 +8,7 @@ const fileUtils = require('../utils/file');
 const apiConfig = require('../configs/api');
 const serverConfig = require('../configs/server');
 const { errorResponses } = require('../constants/errors');
+const { ORDER_BY_LAT_LNG_QUERY } = require('../constants/regex');
 
 class ListingController extends BaseController {
   /**
@@ -421,7 +422,7 @@ class ListingController extends BaseController {
 
   /**
    * Retrieve a list of listings.
-   * TODO: Add lat lng search LMAO!!!!
+   * TODO: Super buggy!
    */
   async retrieveListingList(req, res) {
     let errorResponseData;
@@ -442,14 +443,12 @@ class ListingController extends BaseController {
       currencyTypeIso,
       userId,
       categoryRefId,
+      orderByLatLng,
       limit,
       offset,
     } = req.validated.query.value;
 
-    const orderQuery = [
-      ['listingImages', 'orderIndex', 'ASC'],
-      ['listingImages', 'createdAt', 'DESC'],
-    ];
+    const orderQuery = [];
     const whereQuery = {
       listing: {},
       listingStatus: {},
@@ -461,6 +460,7 @@ class ListingController extends BaseController {
       limit: apiConfig.defaultPaginationLimit,
       offset: 0,
     };
+    const attributes = [];
 
     try {
       if (orderBy && Array.isArray(orderBy)) {
@@ -491,6 +491,31 @@ class ListingController extends BaseController {
       } else {
         // Order by `createdAt` by default.
         orderQuery.push(['createdAt', 'DESC']);
+      }
+
+      if (orderByLatLng) {
+        // UGLY AF.
+        const matches = ORDER_BY_LAT_LNG_QUERY.exec(orderByLatLng);
+        const lat = parseFloat(matches[1]);
+        const lng = parseFloat(matches[4]);
+
+        const distanceSubQuery = models.sequelize.fn(
+          'earth_distance',
+          models.sequelize.fn(
+            'll_to_earth',
+            models.sequelize.literal(
+              `(SELECT CAST("listingAddress".google_geocoding_data->'geometry'->'location'->>'lat' as float8))`
+            ),
+            models.sequelize.literal(
+              `(SELECT CAST("listingAddress".google_geocoding_data->'geometry'->'location'->>'lng' as float8))`
+            )
+          ),
+          models.sequelize.fn('ll_to_earth', lat, lng)
+        );
+
+        attributes.push([distanceSubQuery, 'distance']);
+
+        orderQuery.push([models.sequelize.literal('"distance"'), 'DESC']);
       }
 
       if (filterBy && Array.isArray(filterBy)) {
@@ -568,6 +593,9 @@ class ListingController extends BaseController {
 
     try {
       listingObjs = await models.Listing.findAndCountAll({
+        attributes: {
+          include: [...attributes],
+        },
         where: whereQuery.listing,
         order: orderQuery,
         ...paginationQuery,

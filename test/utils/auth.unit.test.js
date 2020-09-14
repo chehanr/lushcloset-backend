@@ -16,4 +16,25 @@ describe('Auth utils tests', () => {
       /^[A-Za-z0-9-_=]+.[A-Za-z0-9-_=]+.?[A-Za-z0-9-_.+/=]*$/
     );
   });
+
+  const plainPassword = 'testPassword';
+
+  it('Hash and match password test', async () => {
+    const hashedPassword = await authUtils.hashPassword(plainPassword);
+    const matchPasswordResult = await authUtils.matchPassword(
+      plainPassword,
+      hashedPassword
+    );
+    expect.assertions(6);
+    expect(await authUtils.hashPassword(null)).toBeUndefined();
+    expect(matchPasswordResult).toBe(true);
+    expect(
+      await authUtils.matchPassword('invalidPassword', hashedPassword)
+    ).toBe(false);
+    expect(await authUtils.matchPassword(plainPassword, 'invalidHash')).toBe(
+      false
+    );
+    expect(await authUtils.matchPassword('', '')).toBe(false);
+    expect(await authUtils.matchPassword(null, null)).toBe(false);
+  });
 });

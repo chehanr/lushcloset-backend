@@ -2,6 +2,7 @@ const jsonwebtoken = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
 
 const serverConfig = require('../configs/server');
+const logger = require('../loaders/winston');
 
 module.exports = {
   /**
@@ -34,6 +35,8 @@ module.exports = {
           return resolve(hash);
         }
       );
+    }).catch((error) => {
+      logger.error(error);
     });
   },
 
@@ -52,6 +55,9 @@ module.exports = {
 
         return resolve(isSuccess);
       });
+    }).catch((error) => {
+      logger.error(error);
+      return false;
     });
   },
 };

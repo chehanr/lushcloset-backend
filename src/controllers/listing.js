@@ -14,7 +14,7 @@ class ListingController extends BaseController {
   /**
    * Create a listing.
    */
-  async createListingItem(req, res) {
+  async createListing(req, res) {
     let errorResponseData;
 
     if (req.validated.body?.error) {
@@ -311,7 +311,7 @@ class ListingController extends BaseController {
    * Retrieve a listing \
    * with params `listingId`.
    */
-  async retrieveListingItem(req, res) {
+  async getListing(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -424,7 +424,7 @@ class ListingController extends BaseController {
    * Retrieve a list of listings.
    * TODO: Super buggy!
    */
-  async retrieveListingList(req, res) {
+  async getListings(req, res) {
     let errorResponseData;
 
     if (req.validated.query?.error) {
@@ -766,7 +766,7 @@ class ListingController extends BaseController {
    * Update a listing \
    * with params `listingId`.
    */
-  async updateListingItem(req, res) {
+  async updateListing(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -919,7 +919,7 @@ class ListingController extends BaseController {
    * Delete a listing \
    * with params `listingId`.
    */
-  async deleteListingItem(req, res) {
+  async deleteListing(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -975,7 +975,7 @@ class ListingController extends BaseController {
    * Create a listing enquiry for a listing \
    * with params `listinId`.
    */
-  async createListingItemListingEnquiryItem(req, res) {
+  async createEnquiry(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -1084,7 +1084,7 @@ class ListingController extends BaseController {
    * Retrieve a list of listing enquiries for a listing \
    * with params `listingId`.
    */
-  async retrieveListingItemListingEnquiryList(req, res) {
+  async getEnquiries(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -1268,7 +1268,7 @@ class ListingController extends BaseController {
    * Create a listing purchase for a listing \
    * with params `listingId`.
    */
-  async createListingItemListingPurchaseItem(req, res) {
+  async createPurchase(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {
@@ -1360,7 +1360,7 @@ class ListingController extends BaseController {
    * Retrieve a list of listing purchases for a listing \
    * with params `listingId`.
    */
-  async retrieveListingItemListingPurchaseList(req, res) {
+  async getPurchases(req, res) {
     let errorResponseObj;
 
     if (req.validated.params?.error) {

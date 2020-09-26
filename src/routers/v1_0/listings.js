@@ -16,89 +16,81 @@ const router = express.Router();
 router.get(
   '/',
   authMiddleware.authOptional,
-  validationMiddleware(listingValidator.retrieveListingListSchema),
-  (req, res) => {
-    listingController.retrieveListingList(req, res);
+  validationMiddleware(listingValidator.getListingsSchema),
+  async (req, res) => {
+    await listingController.getListings(req, res);
   }
 );
 
 router.post(
   '/',
   authMiddleware.authRequired,
-  validationMiddleware(listingValidator.createListingItemSchema),
-  (req, res) => {
-    listingController.createListingItem(req, res);
+  validationMiddleware(listingValidator.createListingSchema),
+  async (req, res) => {
+    await listingController.createListing(req, res);
   }
 );
 
 router.get(
   '/:listingId',
   authMiddleware.authOptional,
-  validationMiddleware(listingValidator.retrieveListingItemSchema),
-  (req, res) => {
-    listingController.retrieveListingItem(req, res);
+  validationMiddleware(listingValidator.getListingSchema),
+  async (req, res) => {
+    await listingController.getListing(req, res);
   }
 );
 
 router.put(
   '/:listingId',
   authMiddleware.authRequired,
-  validationMiddleware(listingValidator.updateListingItemSchema),
-  (req, res) => {
-    listingController.updateListingItem(req, res);
+  validationMiddleware(listingValidator.updateListingSchema),
+  async (req, res) => {
+    await listingController.updateListing(req, res);
   }
 );
 
 router.delete(
   '/:listingId',
   authMiddleware.authRequired,
-  validationMiddleware(listingValidator.deleteListingItemSchema),
-  (req, res) => {
-    listingController.deleteListingItem(req, res);
+  validationMiddleware(listingValidator.deleteListingSchema),
+  async (req, res) => {
+    await listingController.deleteListing(req, res);
   }
 );
 
 router.get(
   '/:listingId/enquiries',
   authMiddleware.authRequired,
-  validationMiddleware(
-    listingValidator.retrieveListingItemListingEnquiryListSchema
-  ),
-  (req, res) => {
-    listingController.retrieveListingItemListingEnquiryList(req, res);
+  validationMiddleware(listingValidator.getEnquiriesSchema),
+  async (req, res) => {
+    await listingController.getEnquiries(req, res);
   }
 );
 
 router.post(
   '/:listingId/enquiries',
   authMiddleware.authRequired,
-  validationMiddleware(
-    listingValidator.createListingItemListingEnquiryItemSchema
-  ),
-  (req, res) => {
-    listingController.createListingItemListingEnquiryItem(req, res);
+  validationMiddleware(listingValidator.createEnquirySchema),
+  async (req, res) => {
+    await listingController.createEnquiry(req, res);
   }
 );
 
 router.get(
   '/:listingId/purchases',
   authMiddleware.authRequired,
-  validationMiddleware(
-    listingValidator.retrieveListingItemListingPurchaseListSchema
-  ),
-  (req, res) => {
-    listingController.retrieveListingItemListingPurchaseList(req, res);
+  validationMiddleware(listingValidator.getPurchasesSchema),
+  async (req, res) => {
+    await listingController.getPurchases(req, res);
   }
 );
 
 router.post(
   '/:listingId/purchases',
   authMiddleware.authRequired,
-  validationMiddleware(
-    listingValidator.createListingItemListingPurchaseItemSchema
-  ),
-  (req, res) => {
-    listingController.createListingItemListingPurchaseItem(req, res);
+  validationMiddleware(listingValidator.createPurchaseSchema),
+  async (req, res) => {
+    await listingController.createPurchase(req, res);
   }
 );
 

@@ -1,12 +1,10 @@
 const BaseController = require('./base');
 const models = require('../models');
 const googleMapsHelper = require('../helpers/google-maps');
-const B2Helper = require('../helpers/b2');
 const googleMapsUtils = require('../utils/google-maps');
 const apiUtils = require('../utils/api');
 const fileUtils = require('../utils/file');
 const apiConfig = require('../configs/api');
-const serverConfig = require('../configs/server');
 const { errorResponses } = require('../constants/errors');
 const { ORDER_BY_LAT_LNG_QUERY } = require('../constants/regex');
 

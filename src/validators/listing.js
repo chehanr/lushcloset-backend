@@ -6,7 +6,7 @@ const {
 } = require('../constants/regex');
 
 module.exports = {
-  createListingItemSchema: {
+  createListingSchema: {
     BODY: Joi.object({
       title: Joi.string() // TODO: Make custom error message.
         .regex(LISTING_TITLE_BODY)
@@ -33,13 +33,13 @@ module.exports = {
     }),
   },
 
-  retrieveListingItemSchema: {
+  getListingSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
   },
 
-  retrieveListingListSchema: {
+  getListingsSchema: {
     QUERY: Joi.object({
       orderBy: Joi.array().items(
         Joi.valid(
@@ -66,7 +66,7 @@ module.exports = {
     }),
   },
 
-  updateListingItemSchema: {
+  updateListingSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
@@ -83,13 +83,13 @@ module.exports = {
     }),
   },
 
-  deleteListingItemSchema: {
+  deleteListingSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
   },
 
-  createListingItemListingEnquiryItemSchema: {
+  createEnquirySchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
@@ -99,7 +99,7 @@ module.exports = {
     }),
   },
 
-  retrieveListingItemListingEnquiryListSchema: {
+  getEnquiriesSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
@@ -121,13 +121,13 @@ module.exports = {
     }),
   },
 
-  createListingItemListingPurchaseItemSchema: {
+  createPurchaseSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),
   },
 
-  retrieveListingItemListingPurchaseListSchema: {
+  getPurchasesSchema: {
     PARAMS: Joi.object({
       listingId: Joi.string().uuid().required(),
     }),

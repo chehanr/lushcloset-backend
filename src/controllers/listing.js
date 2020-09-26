@@ -312,112 +312,162 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async getListing(req, res) {
-    let errorResponseObj;
+    let errorResponseData;
 
     if (req.validated.params?.error) {
-      errorResponseObj = errorResponses.validationParamError;
-      errorResponseObj.extra = req.validated.params.error;
+      errorResponseData = errorResponses.validationParamError;
+      errorResponseData.extra = req.validated.params.error;
 
-      return this.unprocessableEntity(res, errorResponseObj);
+      return this.unprocessableEntity(res, errorResponseData);
     }
 
+    const { listingId } = req.validated.params.value;
+
+    let listingObj;
+
     try {
-      const listingObj = await models.Listing.findByPk(
-        req.validated.params.value.listingId,
-        {
-          include: [
-            {
-              model: models.User,
-              as: 'user',
-            },
-            {
-              model: models.ListingAddress,
-              as: 'listingAddress',
-            },
-            {
-              model: models.ListingPrice,
-              as: 'listingPrice',
-            },
-            {
-              model: models.ListingStatus,
-              as: 'listingStatus',
-            },
-          ],
-        }
-      );
-
-      if (listingObj) {
-        const geocodingData = listingObj.listingAddress.googleGeocodingData;
-
-        const addressComponentsObj = googleMapsUtils.getAddressComponents(
-          geocodingData
-        );
-
-        const approxAddressComponentsObj = googleMapsUtils.getAddressComponents(
-          geocodingData,
-          true
-        );
-
-        const shortDescription = apiUtils.truncateString(
-          apiUtils.cleanString(listingObj.description),
-          256
-        );
-
-        const responseObj = {
-          id: listingObj.id,
-          title: listingObj.title,
-          shortDescription: shortDescription,
-          description: listingObj.description,
-          listingType: listingObj.listingType,
-          price: {
-            value: listingObj.listingPrice.value,
-            currencyTypeIso: listingObj.listingPrice.currencyTypeIso,
+      listingObj = await models.Listing.findByPk(listingId, {
+        include: [
+          { model: models.User, as: 'user' },
+          { model: models.ListingAddress, as: 'listingAddress' },
+          { model: models.ListingPrice, as: 'listingPrice' },
+          { model: models.ListingStatus, as: 'listingStatus' },
+          {
+            model: models.ListingImage,
+            as: 'listingImages',
+            include: [
+              {
+                model: models.File,
+                as: 'file',
+                include: [{ model: models.FileLink, as: 'fileLinks' }],
+              },
+            ],
           },
-          user: {
-            id: listingObj.user.id,
-            name: listingObj.user.name,
+          {
+            model: models.ListingCategory,
+            as: 'listingCategory',
+            include: [
+              {
+                model: models.ListingCategoryRef,
+                as: 'listingCategoryRef',
+              },
+            ],
           },
-          approximateLocation: {
-            formattedAddress: googleMapsUtils.getFormattedAddress(
-              approxAddressComponentsObj
-            ),
-            addressComponents: approxAddressComponentsObj,
-          },
-          preciseLocation: {
-            submittedAddress: listingObj.listingAddress.submittedAddress,
-            formattedAddress: listingObj.listingAddress.formattedAddress,
-            addressComponents: addressComponentsObj,
-            geographic: {
-              lat:
-                listingObj.listingAddress.googleGeocodingData?.geometry
-                  ?.location.lat || null,
-              lng:
-                listingObj.listingAddress.googleGeocodingData?.geometry
-                  ?.location.lng || null,
-            },
-            googlePlaceId:
-              // eslint-disable-next-line camelcase
-              listingObj.listingAddress.googleGeocodingData?.place_id || null,
-            note: listingObj.listingAddress.note || null,
-          },
-          status: listingObj.listingStatus.statusType,
-          createdAt: listingObj.createdAt,
-          updatedAt: listingObj.updatedAt,
-        };
-
-        if (listingObj.userId !== req.user?.id) {
-          // If user isn't creator.
-
-          responseObj.preciseLocation = null;
-        }
-
-        return this.ok(res, responseObj);
-      }
-
-      return this.notFound(res, null);
+          { model: models.ListingMetadata, as: 'listingMetadata' },
+        ],
+      });
     } catch (error) {
       return this.fail(res, error);
     }
+
+    if (!listingObj) {
+      return this.notFound(res, errorResponses.listingNotFoundError);
+    }
+
+    let geocodingData;
+    let addressComponents;
+    let approxAddressComponents;
+    let shortDescription;
+    let formattedApproxAddress;
+
+    try {
+      geocodingData = listingObj.listingAddress.googleGeocodingData;
+
+      addressComponents = googleMapsUtils.getAddressComponents(geocodingData);
+
+      approxAddressComponents = googleMapsUtils.getAddressComponents(
+        geocodingData,
+        true
+      );
+
+      shortDescription = apiUtils.truncateString(
+        apiUtils.cleanString(listingObj.description),
+        256
+      );
+
+      formattedApproxAddress = googleMapsUtils.getFormattedAddress(
+        approxAddressComponents
+      );
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    const responseData = {
+      id: listingObj.id,
+      title: listingObj.title,
+      shortDescription: shortDescription,
+      description: listingObj.description,
+      listingType: listingObj.listingType,
+      status: listingObj.listingStatus.statusType,
+      price: {
+        value: listingObj.listingPrice.value,
+        currencyTypeIso: listingObj.listingPrice.currencyTypeIso,
+      },
+      createdBy: {
+        id: listingObj.user.id,
+        name: listingObj.user.name,
+      },
+      approximateLocation: {
+        formattedAddress: formattedApproxAddress,
+        addressComponents: approxAddressComponents,
+      },
+      preciseLocation: {
+        submittedAddress: listingObj.listingAddress.submittedAddress,
+        formattedAddress: listingObj.listingAddress.formattedAddress,
+        addressComponents: addressComponents,
+        geographic: {
+          lat:
+            listingObj.listingAddress.googleGeocodingData?.geometry?.location
+              .lat || null,
+          lng:
+            listingObj.listingAddress.googleGeocodingData?.geometry?.location
+              .lng || null,
+        },
+        googlePlaceId:
+          // eslint-disable-next-line camelcase
+          listingObj.listingAddress.googleGeocodingData?.place_id || null,
+        note: listingObj.listingAddress.note || null,
+      },
+      metaData: {
+        size: listingObj.listingMetadata.size,
+        brandName: listingObj.listingMetadata.brandName,
+        condition: listingObj.listingMetadata.condition,
+      },
+      images: [],
+      createdAt: listingObj.createdAt,
+      updatedAt: listingObj.updatedAt,
+    };
+
+    listingObj.listingImages.forEach((listingImageObj) => {
+      const image = {
+        id: listingImageObj.id,
+        orderIndex: listingImageObj.orderIndex || 0,
+        file: {
+          id: listingImageObj.file.id,
+          links: [],
+        },
+      };
+
+      listingImageObj.file.fileLinks.forEach((fileLinkObj) => {
+        image.file.links.push({
+          id: fileLinkObj.id,
+          fileSize: fileLinkObj.fileSize,
+          fileContentType: fileLinkObj.fileContentType,
+          url: fileUtils.getFileLinkUrl(fileLinkObj),
+          metadata: fileLinkObj.metadata || {},
+        });
+      });
+
+      responseData.images.push(image);
+    });
+
+    if (listingObj.userId !== req.user?.id) {
+      // If user isn't creator.
+
+      responseData.preciseLocation = null;
+    }
+
+    return this.ok(res, responseData);
   }
 
   /**

@@ -1013,55 +1013,54 @@ class ListingController extends BaseController {
    * with params `listingId`.
    */
   async deleteListing(req, res) {
-    let errorResponseObj;
+    let errorResponseData;
 
     if (req.validated.params?.error) {
-      errorResponseObj = errorResponses.validationParamError;
-      errorResponseObj.extra = req.validated.params.error;
+      errorResponseData = errorResponses.validationParamError;
+      errorResponseData.extra = req.validated.params.error;
 
-      return this.unprocessableEntity(res, errorResponseObj);
+      return this.unprocessableEntity(res, errorResponseData);
     }
 
+    const { listingId } = req.validated.params.value;
+
+    let listingObj;
+
     try {
-      const listingObj = await models.Listing.findByPk(
-        req.validated.params.value.listingId,
-        {
-          include: [
-            {
-              model: models.User,
-              as: 'user',
-            },
-            {
-              model: models.ListingStatus,
-              as: 'listingStatus',
-            },
-          ],
-        }
-      );
-
-      if (listingObj) {
-        if (listingObj.userId !== req.user?.id) {
-          return this.unauthorized(res, null);
-        }
-
-        if (listingObj.listingStatus.statusType !== 'available') {
-          errorResponseObj = errorResponses.lockedListingError;
-          errorResponseObj.extra = {
-            listingStatus: listingObj.listingStatus.statusType,
-          };
-
-          return this.forbidden(res, errorResponseObj);
-        }
-
-        await listingObj.destroy();
-
-        return this.noContent(res, null);
-      }
-
-      return this.notFound(res, null);
+      listingObj = await models.Listing.findByPk(listingId, {
+        include: [
+          { model: models.User, as: 'user' },
+          { model: models.ListingStatus, as: 'listingStatus' },
+        ],
+      });
     } catch (error) {
       return this.fail(res, error);
     }
+
+    if (!listingObj) {
+      return this.notFound(res, errorResponses.listingNotFoundError);
+    }
+
+    if (listingObj.userId !== req.user?.id) {
+      return this.unauthorized(res, null);
+    }
+
+    if (listingObj.listingStatus.statusType !== 'available') {
+      errorResponseData = errorResponses.lockedListingError;
+      errorResponseData.extra = {
+        listingStatus: listingObj.listingStatus.statusType,
+      };
+
+      return this.forbidden(res, errorResponseData);
+    }
+
+    try {
+      await listingObj.destroy();
+    } catch (error) {
+      return this.fail(res, error);
+    }
+
+    return this.noContent(res, null);
   }
 
   /**

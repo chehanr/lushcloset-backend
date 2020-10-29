@@ -1,0 +1,1771 @@
+{
+	"info": {
+		"_postman_id": "40055640-ec0b-4693-9902-f4cceb0364a1",
+		"name": "LushCloset API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "v1.0",
+			"item": [
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Register a user",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "John Doe",
+											"type": "text"
+										},
+										{
+											"key": "email",
+											"value": "johndoe@gmail.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									],
+									"options": {
+										"formdata": {}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/auth/local/register?name=John Doe&email=johndoe@gmail.com&password=password",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"auth",
+										"local",
+										"register"
+									],
+									"query": [
+										{
+											"key": "name",
+											"value": "John Doe"
+										},
+										{
+											"key": "email",
+											"value": "johndoe@gmail.com"
+										},
+										{
+											"key": "password",
+											"value": "password"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login a user",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "email",
+											"value": "john.doe@email.com",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									],
+									"options": {
+										"formdata": {}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/auth/local/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"auth",
+										"local",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resend verification email",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/auth/verify/email/resend",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"auth",
+										"verify",
+										"email",
+										"resend"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify an email",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/auth/verify/email?userId=870a0d49-a041-4daf-b650-2da1e04cda73&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg3MGEwZDQ5LWEwNDEtNGRhZi1iNjUwLTJkYTFlMDRjZGE3MyIsImVtYWlsIjoiY2hlaGFuLnJhdEBnbWFpbC5jb20iLCJpYXQiOjE1OTg5NDA2NjEsImV4cCI6MTU5OTAyNzA2MX0.f57L3hHBB2dnBjPnqQ7rwqnQye2T5AF1ZxlLLB9uLVc",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"auth",
+										"verify",
+										"email"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "870a0d49-a041-4daf-b650-2da1e04cda73"
+										},
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg3MGEwZDQ5LWEwNDEtNGRhZi1iNjUwLTJkYTFlMDRjZGE3MyIsImVtYWlsIjoiY2hlaGFuLnJhdEBnbWFpbC5jb20iLCJpYXQiOjE1OTg5NDA2NjEsImV4cCI6MTU5OTAyNzA2MX0.f57L3hHBB2dnBjPnqQ7rwqnQye2T5AF1ZxlLLB9uLVc"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Me",
+					"item": [
+						{
+							"name": "Get me",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/me",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update me",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "Joe Dirt",
+											"type": "text"
+										}
+									],
+									"options": {
+										"formdata": {},
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/me",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create an avatar",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "fileId",
+											"value": "dfb29adc-b7b1-438d-a656-9b3037bd5331",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/me/avatar",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"me",
+										"avatar"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Get a user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/users/6acc096a-50f6-467c-85c6-47b342fe9bbb",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"users",
+										"6acc096a-50f6-467c-85c6-47b342fe9bbb"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Listings ",
+					"item": [
+						{
+							"name": "Create a listing",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Purchasable product",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? Hello how low? ",
+											"type": "text"
+										},
+										{
+											"key": "listingType",
+											"value": "sell",
+											"type": "text"
+										},
+										{
+											"key": "priceValue",
+											"value": "2000000000",
+											"type": "text"
+										},
+										{
+											"key": "currencyTypeIso",
+											"value": "AUD",
+											"type": "text"
+										},
+										{
+											"key": "address",
+											"value": "Swinburne Hawthorne",
+											"type": "text"
+										},
+										{
+											"key": "addressNote",
+											"value": "EN building",
+											"type": "text"
+										},
+										{
+											"key": "categoryRefId",
+											"value": "5944d35e-05da-45fc-bd04-056c1cebbd84",
+											"type": "text"
+										},
+										{
+											"key": "size",
+											"value": "Large",
+											"type": "text"
+										},
+										{
+											"key": "brandName",
+											"value": "Gucci",
+											"type": "text"
+										},
+										{
+											"key": "condition",
+											"value": "new",
+											"type": "text"
+										},
+										{
+											"key": "imageFileId[]",
+											"value": "15ad3306-cc19-4b7a-bc7b-7a7c02026221",
+											"type": "text"
+										},
+										{
+											"key": "imageFileId[]",
+											"value": "904705f3-abb5-4259-9feb-f9d09bcb24c0",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a listing",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/4dd7c2df-3240-4d00-b31d-0d1a5a7cdb39",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"4dd7c2df-3240-4d00-b31d-0d1a5a7cdb39"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all listings",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										""
+									],
+									"query": [
+										{
+											"key": "orderBy[]",
+											"value": "createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy[]",
+											"value": "-createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy[]",
+											"value": "updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy[]",
+											"value": "-updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy[]",
+											"value": "priceValue",
+											"disabled": true
+										},
+										{
+											"key": "orderBy[]",
+											"value": "-priceValue",
+											"disabled": true
+										},
+										{
+											"key": "filterBy[]",
+											"value": "isRentable",
+											"disabled": true
+										},
+										{
+											"key": "filterBy[]",
+											"value": "isPurchasable",
+											"disabled": true
+										},
+										{
+											"key": "filterBy[]",
+											"value": "isAvailable",
+											"disabled": true
+										},
+										{
+											"key": "filterBy[]",
+											"value": "-isAvailable",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "120",
+											"disabled": true
+										},
+										{
+											"key": "offset",
+											"value": "3",
+											"disabled": true
+										},
+										{
+											"key": "titleiLike",
+											"value": "test",
+											"disabled": true
+										},
+										{
+											"key": "priceGte",
+											"value": "200",
+											"disabled": true
+										},
+										{
+											"key": "priceLte",
+											"value": "200000000",
+											"disabled": true
+										},
+										{
+											"key": "currencyTypeIso",
+											"value": "AUD",
+											"disabled": true
+										},
+										{
+											"key": "categoryRefId[]",
+											"value": "08bd1837-17e6-4a4d-8cd5-45fa325fd816",
+											"disabled": true
+										},
+										{
+											"key": "userId[]",
+											"value": "6acc096a-50f6-467c-85c6-47b342fe9bbb",
+											"disabled": true
+										},
+										{
+											"key": "userId[]",
+											"value": "6acc096a-50f6-467c-85c6-47b342fe9bbb",
+											"disabled": true
+										},
+										{
+											"key": "orderByLatLng",
+											"value": "90.0|-127.554334",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update a listing",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "description",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "priceValue",
+											"value": "",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "addressNote",
+											"value": "Update note content",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/64954b86-0219-469d-9c9d-11fb730c6757",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"64954b86-0219-469d-9c9d-11fb730c6757"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a listing",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/64954b86-0219-469d-9c9d-11fb730c6757",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"64954b86-0219-469d-9c9d-11fb730c6757"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "d0fc84c4-a547-45cd-bae4-bb9969b928cf",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "f22cb42d-8e01-4f23-a6f9-b3f02caa25b4",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Listings / Enquiries",
+					"item": [
+						{
+							"name": "Create an enquiry",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/enquiries",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"enquiries"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all enquiries",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/1a624448-7d61-41a4-8ab3-090e44ae1e8c/enquiries",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"1a624448-7d61-41a4-8ab3-090e44ae1e8c",
+										"enquiries"
+									],
+									"query": [
+										{
+											"key": "orderBy",
+											"value": "createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "IsPending",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "IsAccepted",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isRejected",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isCompleted",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "120",
+											"disabled": true
+										},
+										{
+											"key": "offset",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Listings / Purchases",
+					"item": [
+						{
+							"name": "Create a purchase",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/cdba6fc5-91e9-42b5-a8c4-d1ccb3cbcd4a/purchases",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"cdba6fc5-91e9-42b5-a8c4-d1ccb3cbcd4a",
+										"purchases"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all purchases",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/cdba6fc5-91e9-42b5-a8c4-d1ccb3cbcd4a/purchases",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"cdba6fc5-91e9-42b5-a8c4-d1ccb3cbcd4a",
+										"purchases"
+									],
+									"query": [
+										{
+											"key": "orderBy",
+											"value": "createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "IsPending",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isCancelled",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isPicked",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "120",
+											"disabled": true
+										},
+										{
+											"key": "offset",
+											"value": "1",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Listing / Images",
+					"item": [
+						{
+							"name": "Create an image",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "orderIndex",
+											"value": "100",
+											"type": "text"
+										},
+										{
+											"key": "fileId",
+											"value": "15ad3306-cc19-4b7a-bc7b-7a7c02026221",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/images",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all images",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/images",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get an image",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/images/1b8b721c-600e-4798-a4a1-75828bd75354",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"images",
+										"1b8b721c-600e-4798-a4a1-75828bd75354"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update an image",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "orderIndex",
+											"value": "5",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/images/1b8b721c-600e-4798-a4a1-75828bd75354",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"images",
+										"1b8b721c-600e-4798-a4a1-75828bd75354"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete an image",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "fileId",
+											"value": "556bde87-561c-409c-85f2-9169d8925410",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/listings/28c354d5-e66b-449b-84c0-6fb775dfeba9/images/0b4e29a2-9099-4d95-a5aa-4ca312535934",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"listings",
+										"28c354d5-e66b-449b-84c0-6fb775dfeba9",
+										"images",
+										"0b4e29a2-9099-4d95-a5aa-4ca312535934"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Enquiries",
+					"item": [
+						{
+							"name": "Accept an enquiry",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/enquiries/a379672f-ff39-4980-a693-0c836d425a6f/accept",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"a379672f-ff39-4980-a693-0c836d425a6f",
+										"accept"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reject an enquiry",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/enquiries/2523fd44-4464-4973-b308-60cb2f083de5/reject",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"2523fd44-4464-4973-b308-60cb2f083de5",
+										"reject"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel an enquiry",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/enquiries/5941a45e-823c-4cfc-8b68-235a7cd90a56/cancel",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"5941a45e-823c-4cfc-8b68-235a7cd90a56",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get an enquiry",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:{{port}}/api/v1_0/enquiries/a379672f-ff39-4980-a693-0c836d425a6f",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "{{port}}",
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"a379672f-ff39-4980-a693-0c836d425a6f"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update an enquiry",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "note",
+											"value": "Updated note",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/enquiries/905bcc8f-7e8f-4547-b522-674016373923/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"905bcc8f-7e8f-4547-b522-674016373923",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete an enquiry",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/enquiries/905bcc8f-7e8f-4547-b522-674016373923",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"enquiries",
+										"905bcc8f-7e8f-4547-b522-674016373923"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Rentals",
+					"item": [
+						{
+							"name": "Verify a rental pickup",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "8c740759-57ea-45d5-9f61-b0c685010a5f",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/rentals/0fb88324-815d-479d-8096-c3e80667d6d0/verify/pickup",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"rentals",
+										"0fb88324-815d-479d-8096-c3e80667d6d0",
+										"verify",
+										"pickup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify a rental return",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "4df98961-aab1-45cf-aedf-04f2fb7040f3",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/rentals/0fb88324-815d-479d-8096-c3e80667d6d0/verify/return",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"rentals",
+										"0fb88324-815d-479d-8096-c3e80667d6d0",
+										"verify",
+										"return"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Retrieve a rental",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/rentals/0fb88324-815d-479d-8096-c3e80667d6d0",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"rentals",
+										"0fb88324-815d-479d-8096-c3e80667d6d0"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "382d5a24-6c93-443d-b1c2-07985f369c27",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "46764f2a-c125-41fb-9860-e14b5e8a5b63",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Purchases",
+					"item": [
+						{
+							"name": "Cancel a purchase",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "4df98961-aab1-45cf-aedf-04f2fb7040f3",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/purchases/e7710ede-d38a-4c04-8d89-b40c011555c3/cancel",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"purchases",
+										"e7710ede-d38a-4c04-8d89-b40c011555c3",
+										"cancel"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify a purchase pickup",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "code",
+											"value": "454b4ab0-4a34-4576-98a0-a41e70b834e2",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/purchases/e7710ede-d38a-4c04-8d89-b40c011555c3/verify/pickup",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"purchases",
+										"e7710ede-d38a-4c04-8d89-b40c011555c3",
+										"verify",
+										"pickup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a purchase",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/purchases/e7710ede-d38a-4c04-8d89-b40c011555c3",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"purchases",
+										"e7710ede-d38a-4c04-8d89-b40c011555c3"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "d2c7a713-203e-4d5f-b5d8-48caf006b16b",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "befc9f9d-f851-42d5-89ab-c9b1f8870f00",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Chats",
+					"item": [
+						{
+							"name": "Create a chat thread",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "participantId",
+											"value": "c0684db2-50b1-4857-9220-2bb962c98f48",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a chat message",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "content",
+											"value": "Hello",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/fbade9a9-9929-49b6-aeb6-f0ef757c6531/messages",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										"fbade9a9-9929-49b6-aeb6-f0ef757c6531",
+										"messages"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all chat threads",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/?orderBy",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										""
+									],
+									"query": [
+										{
+											"key": "orderBy",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a chat thread",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/fbade9a9-9929-49b6-aeb6-f0ef757c6531",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										"fbade9a9-9929-49b6-aeb6-f0ef757c6531"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all chat messages",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/fbade9a9-9929-49b6-aeb6-f0ef757c6531/messages",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										"fbade9a9-9929-49b6-aeb6-f0ef757c6531",
+										"messages"
+									],
+									"query": [
+										{
+											"key": "orderBy",
+											"value": "-createdAt",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Geta a chat message",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/chats/fbade9a9-9929-49b6-aeb6-f0ef757c6531/messages/45ca270c-1373-4ec2-a3cc-fce998a0f370",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"chats",
+										"fbade9a9-9929-49b6-aeb6-f0ef757c6531",
+										"messages",
+										"45ca270c-1373-4ec2-a3cc-fce998a0f370"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Files",
+					"item": [
+						{
+							"name": "Create a file",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "purpose",
+											"value": "listing_image",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/home/chehanr/Downloads/42E9as7NaTaAi4A6JcuFwG.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1_0/files",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"files"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a file",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/files/15ad3306-cc19-4b7a-bc7b-7a7c02026221",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"files",
+										"15ad3306-cc19-4b7a-bc7b-7a7c02026221"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all files",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/files/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"files",
+										""
+									],
+									"query": [
+										{
+											"key": "orderBy",
+											"value": "createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-createdAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "orderBy",
+											"value": "-updatedAt",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isListingImage",
+											"disabled": true
+										},
+										{
+											"key": "filterBy",
+											"value": "isUserAvatar",
+											"disabled": true
+										},
+										{
+											"key": "limit",
+											"value": "120",
+											"disabled": true
+										},
+										{
+											"key": "offset",
+											"value": "2",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Refs",
+					"item": [
+						{
+							"name": "Get all categories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1_0/refs/categories",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1_0",
+										"refs",
+										"categories"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNmFjYzA5NmEtNTBmNi00NjdjLTg1YzYtNDdiMzQyZmU5YmJiIiwiZW1haWwiOiJjaGVoYW4ucmF0QGdtYWlsLmNvbSJ9LCJpYXQiOjE2MDExMTQyMzIsImV4cCI6MTYwMzcwNjIzMn0._Bg3ih-QBQwRlJK2-FWu_4AyVSVgnZOlsPnuKE8WmIQ",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e429cd09-245c-4604-92f1-e7b76a875ff1",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "def1847b-9637-4f15-8df6-9bc369a23504",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "0231db16-713b-474d-a36b-f8920c3bd1e9",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "8659a15a-0df3-4c73-9e8b-ed595553cf53",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "8609630f-6c19-4a25-bc89-d986517c134a",
+			"key": "host",
+			"value": "http://localhost:3000"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

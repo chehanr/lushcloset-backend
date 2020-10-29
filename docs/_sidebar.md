@@ -1,1 +1,2 @@
 - [API Reference](/api/)
+- [Postman Collection](/assets/postman_collection.json ':ignore')
